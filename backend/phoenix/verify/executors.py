@@ -147,7 +147,7 @@ class DockerExecutor(Executor):
             "--cpus", self.cpus,
             "--pids-limit", "128",
             "--read-only",
-            "--tmpfs", "/tmp:rw,exec,nosuid,size=256m",
+            "--tmpfs", "/tmp:rw,exec,nosuid,size=256m",  # nosec B108 - path inside the sandbox container
             "--cap-drop", "ALL",
             "--security-opt", "no-new-privileges",
             "--user", "10001:10001",

@@ -1,0 +1,59 @@
+# COBOL Phoenix — local / single-host deployment
+#   docker compose up --build      -> http://localhost:3000
+services:
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        PHOENIX_BACKEND_URL: http://backend:8000
+    ports:
+      - "${PHOENIX_WEB_PORT:-3000}:3000"
+    depends_on:
+      backend:
+        condition: service_healthy
+    restart: unless-stopped
+
+  backend:
+    build: ./backend
+    environment:
+      PHOENIX_DATA_DIR: /data
+      PHOENIX_COBOL_EXECUTOR: queue
+      PHOENIX_QUEUE_DIR: /jobs
+      PHOENIX_CORS_ORIGINS: ${PHOENIX_CORS_ORIGINS:-http://localhost:3000}
+      PHOENIX_ALLOW_GITHUB_IMPORT: ${PHOENIX_ALLOW_GITHUB_IMPORT:-true}
+      PHOENIX_LLM_PROVIDER: ${PHOENIX_LLM_PROVIDER:-none}
+      PHOENIX_LLM_BASE_URL: ${PHOENIX_LLM_BASE_URL:-}
+      PHOENIX_LLM_API_KEY: ${PHOENIX_LLM_API_KEY:-}
+      PHOENIX_LLM_MODEL: ${PHOENIX_LLM_MODEL:-}
+    volumes:
+      - phoenix-data:/data
+      - phoenix-jobs:/jobs
+    ports:
+      - "${PHOENIX_API_PORT:-8000}:8000"
+    security_opt:
+      - no-new-privileges:true
+    restart: unless-stopped
+
+  # GnuCOBOL sandbox: no network, read-only root FS, no capabilities,
+  # resource limits; it only sees the shared job queue volume.
+  runner:
+    build: ./runner
+    command: ["serve", "/jobs"]
+    network_mode: none
+    read_only: true
+    tmpfs:
+      - /tmp:rw,exec,nosuid,size=512m
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    mem_limit: 1g
+    cpus: 1.0
+    pids_limit: 256
+    volumes:
+      - phoenix-jobs:/jobs
+    restart: unless-stopped
+
+volumes:
+  phoenix-data:
+  phoenix-jobs:

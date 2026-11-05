@@ -306,6 +306,8 @@ def _schemas(iface: Interface) -> str:
     ]
     base = _camel(iface.entry)
     if iface.mode == "main":
+        head.remove("from decimal import Decimal")
+        head.remove("")  # keep a single blank line between import groups
         sw.lines += [
             f"class {base}Request(BaseModel):",
             "    model_config = ConfigDict(extra='forbid')",
