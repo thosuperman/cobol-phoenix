@@ -1,0 +1,192 @@
+@import "tailwindcss";
+
+@theme {
+  --color-ink-950: #07080b;
+  --color-ink-900: #0b0d11;
+  --color-ink-850: #0f1218;
+  --color-ink-800: #141821;
+  --color-ink-700: #1b2029;
+  --color-ink-600: #262d39;
+  --color-ink-500: #343d4c;
+  --color-fog-50: #f4f6f8;
+  --color-fog-100: #e7eaee;
+  --color-fog-300: #c3c9d2;
+  --color-fog-400: #98a1af;
+  --color-fog-500: #6c7584;
+  --color-phoenix-200: #ffe0b0;
+  --color-phoenix-300: #ffc46b;
+  --color-phoenix-400: #ffa53d;
+  --color-phoenix-500: #ff8a1f;
+  --color-phoenix-600: #ef6a0b;
+  --color-phoenix-700: #b94d05;
+  --color-ember-500: #e2482b;
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: var(--font-jetbrains), ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+
+:root {
+  color-scheme: dark;
+}
+
+html,
+body {
+  background: var(--color-ink-950);
+  color: var(--color-fog-100);
+}
+
+body {
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+::selection {
+  background: color-mix(in srgb, var(--color-phoenix-500) 35%, transparent);
+}
+
+/* subtle terminal grid used on hero / empty states */
+.grid-bg {
+  background-image:
+    linear-gradient(to right, rgb(255 255 255 / 0.035) 1px, transparent 1px),
+    linear-gradient(to bottom, rgb(255 255 255 / 0.035) 1px, transparent 1px);
+  background-size: 32px 32px;
+}
+
+.scanlines {
+  background-image: repeating-linear-gradient(to bottom, rgb(255 255 255 / 0.02) 0 1px, transparent 1px 3px);
+}
+
+.text-gradient-phoenix {
+  background: linear-gradient(90deg, var(--color-phoenix-300), var(--color-phoenix-500) 45%, var(--color-ember-500));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.glow-phoenix {
+  box-shadow: 0 0 0 1px rgb(255 138 31 / 0.25), 0 10px 40px -12px rgb(255 138 31 / 0.35);
+}
+
+@keyframes ember {
+  0%,
+  100% {
+    opacity: 0.55;
+    transform: translateY(0);
+  }
+  50% {
+    opacity: 1;
+    transform: translateY(-2px);
+  }
+}
+.animate-ember {
+  animation: ember 3.2s ease-in-out infinite;
+}
+
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.animate-fade-up {
+  animation: fade-up 0.35s ease-out both;
+}
+
+/* code viewer */
+.code-line:target,
+.code-line[data-hl="true"] {
+  background: rgb(255 138 31 / 0.11);
+  box-shadow: inset 2px 0 0 var(--color-phoenix-500);
+}
+.tok-kw {
+  color: #ffb45c;
+}
+.tok-str {
+  color: #9fd59a;
+}
+.tok-num {
+  color: #7cc4f8;
+}
+.tok-com {
+  color: #657084;
+  font-style: italic;
+}
+.tok-fn {
+  color: #e0a8ff;
+}
+.tok-seq {
+  color: #3f4756;
+}
+
+/* react flow dark tweaks */
+.react-flow__attribution {
+  display: none;
+}
+.react-flow__controls button {
+  background: var(--color-ink-800);
+  border-color: var(--color-ink-600);
+  fill: var(--color-fog-300);
+}
+.react-flow__controls button:hover {
+  background: var(--color-ink-700);
+}
+
+/* markdown preview */
+.md h1 {
+  font-size: 1.4rem;
+  font-weight: 650;
+  margin: 0.2rem 0 0.8rem;
+}
+.md h2 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin: 1.4rem 0 0.6rem;
+  color: var(--color-phoenix-300);
+}
+.md h3 {
+  font-weight: 600;
+  margin: 1rem 0 0.4rem;
+}
+.md p,
+.md li {
+  color: var(--color-fog-300);
+  line-height: 1.6;
+}
+.md ul,
+.md ol {
+  padding-left: 1.2rem;
+  list-style: disc;
+}
+.md ol {
+  list-style: decimal;
+}
+.md table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.8rem;
+  margin: 0.6rem 0;
+}
+.md th,
+.md td {
+  border: 1px solid var(--color-ink-600);
+  padding: 0.35rem 0.5rem;
+  text-align: left;
+}
+.md th {
+  background: var(--color-ink-800);
+}
+.md code {
+  font-family: var(--font-mono);
+  font-size: 0.8em;
+  background: var(--color-ink-800);
+  padding: 0.05rem 0.3rem;
+  border-radius: 4px;
+}
+.md blockquote {
+  border-left: 3px solid var(--color-phoenix-500);
+  padding-left: 0.8rem;
+  color: var(--color-fog-300);
+}
