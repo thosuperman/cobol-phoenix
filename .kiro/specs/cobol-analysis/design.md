@@ -23,6 +23,7 @@ Decision points: each IF, each EVALUATE WHEN, each PERFORM UNTIL/VARYING, each A
 - Comment blocks directly above or inside a paragraph of the form `ID: text` (e.g. `NB-202:`)
   are captured as rule annotations with their own line ranges.
 - Inputs = fields read before being written in the paragraph; outputs = fields written.
-- Status semantics: `EXTRACTED` (deterministic, not yet exercised), `VERIFIED` (all statement
-  lines executed by at least one passing differential case and none by a failing one),
-  `FAILED` (executed by a failing case), `UNSUPPORTED` (contains an unsupported construct).
+- Status semantics: `NOT_RUN` (no verification yet), `VERIFIED` (executed by at least one passing
+  differential case and not blamed by a failing one), `FAILED` (executed by a failing case whose differing
+  fields include one of the rule's outputs, or whose difference cannot be attributed), `NOT_EXERCISED`
+  (no compared case executed it), `UNSUPPORTED` (contains an unsupported construct). Coverage % is reported.
