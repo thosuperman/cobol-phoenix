@@ -163,6 +163,8 @@ def import_zip(data: bytes, settings: Settings) -> ImportResult:
     if len(tops) == 1 and all("/" in rel for _, rel in names):
         prefix = tops.pop() + "/"
     res.root_prefix = prefix
+    if len(names) > settings.max_files:
+        raise ImportError_(f"too many files (limit {settings.max_files})")
     for info, rel in names:
         rel2 = rel[len(prefix) :] if prefix and rel.startswith(prefix) else rel
         if not _accept(rel2, res):
@@ -170,9 +172,11 @@ def import_zip(data: bytes, settings: Settings) -> ImportResult:
         with zf.open(info) as fh:
             content = fh.read(settings.max_file_kb * 1024 + 1)
         try:
-            _store(res, rel2, _decode(content, rel2, settings), settings)
+            text = _decode(content, rel2, settings)
         except ImportError_ as exc:
             res.skipped.append({"path": rel2, "reason": str(exc)})
+            continue
+        _store(res, rel2, text, settings)
     if not any(PurePosixPath(p).suffix.lower() in SOURCE_EXTS for p in res.files):
         raise ImportError_("no COBOL source files (.cob, .cbl, .cpy, ...) found in archive")
     return res

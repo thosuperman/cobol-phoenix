@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import logging
+from contextlib import asynccontextmanager
 from pathlib import PurePosixPath
 from typing import Annotated
 
@@ -22,7 +23,14 @@ from .importer import ImportError_, github_archive_url, import_local_dir, import
 
 log = logging.getLogger("phoenix.api")
 
-app = FastAPI(title="COBOL Phoenix API", version=VERSION, description="Evidence-backed COBOL to Python modernization.")
+
+@asynccontextmanager
+async def lifespan(_: FastAPI):
+    init_db()
+    yield
+
+
+app = FastAPI(title="COBOL Phoenix API", version=VERSION, description="Evidence-backed COBOL to Python modernization.", lifespan=lifespan)
 _settings = get_settings()
 app.add_middleware(
     CORSMiddleware,
@@ -31,11 +39,6 @@ app.add_middleware(
     allow_methods=["GET", "POST", "PUT", "DELETE"],
     allow_headers=["Content-Type"],
 )
-
-
-@app.on_event("startup")
-def _startup() -> None:
-    init_db()
 
 
 @app.exception_handler(services.NotFound)
@@ -74,7 +77,16 @@ def project_out(p: Project) -> dict:
 
 
 def generation_out(g: Generation) -> dict:
-    return {"id": g.id, "project_id": g.project_id, "entry": g.entry, "name": g.name, "mutation_id": g.mutation_id, "mutation_detail": g.mutation_detail, "created_at": g.created_at.isoformat(), "summary": json.loads(g.summary_json or "{}")}
+    return {
+        "id": g.id,
+        "project_id": g.project_id,
+        "entry": g.entry,
+        "name": g.name,
+        "mutation_id": g.mutation_id,
+        "mutation_detail": g.mutation_detail,
+        "created_at": g.created_at.isoformat(),
+        "summary": json.loads(g.summary_json or "{}"),
+    }
 
 
 def run_out(r: VerificationRun, full: bool = False) -> dict:
@@ -101,7 +113,12 @@ def run_out(r: VerificationRun, full: bool = False) -> dict:
 def health() -> dict:
     ok, detail = services.executor().available()
     prov = get_provider(_settings)
-    return {"status": "ok", "version": VERSION, "executor": {"name": _settings.cobol_executor, "available": ok, "detail": detail}, "llm": {"provider": prov.name}}
+    return {
+        "status": "ok",
+        "version": VERSION,
+        "executor": {"name": _settings.cobol_executor, "available": ok, "detail": detail},
+        "llm": {"provider": prov.name},
+    }
 
 
 @app.get("/api/dashboard")
@@ -164,7 +181,9 @@ async def _read_limited(f: UploadFile, limit: int) -> bytes:
 
 
 @app.post("/api/projects/upload", status_code=201)
-async def upload(files: Annotated[list[UploadFile], File()], name: Annotated[str, Form()] = "Uploaded project", source_format: Annotated[str, Form()] = "auto") -> dict:
+async def upload(
+    files: Annotated[list[UploadFile], File()], name: Annotated[str, Form()] = "Uploaded project", source_format: Annotated[str, Form()] = "auto"
+) -> dict:
     limit = _settings.max_upload_mb * 1024 * 1024
     items: list[tuple[str, bytes]] = []
     if len(files) == 1 and (files[0].filename or "").lower().endswith(".zip"):
@@ -215,7 +234,9 @@ def import_github(body: GithubImport) -> dict:
         res.files = {k[len(prefix) :]: v for k, v in res.files.items() if k.startswith(prefix)}
         if not any(PurePosixPath(k).suffix.lower() in SOURCE_EXTS for k in res.files):
             raise HTTPException(400, f"no COBOL sources under {body.subdir}")
-    p = services.create_project(body.name or f"{owner}/{repo}", "github", f"https://github.com/{owner}/{repo} @ {body.ref}", res, format_override=_fmt(body.source_format))
+    p = services.create_project(
+        body.name or f"{owner}/{repo}", "github", f"https://github.com/{owner}/{repo} @ {body.ref}", res, format_override=_fmt(body.source_format)
+    )
     services.analyze_project(p.id)
     return project_out(services.get_project(p.id))
 
@@ -297,7 +318,14 @@ def explain(pid: str, rule_id: str) -> dict:
 
         exp = DeterministicProvider().explain(rule, snippet)
         exp.text += f" (LLM provider unavailable: {type(exc).__name__})"
-    return {"rule_id": rule_id, "text": exp.text, "provider": exp.provider, "model": exp.model, "advisory": exp.advisory, "evidence": {"file": rule["file"], "line_start": rule["line_start"], "line_end": rule["line_end"]}}
+    return {
+        "rule_id": rule_id,
+        "text": exp.text,
+        "provider": exp.provider,
+        "model": exp.model,
+        "advisory": exp.advisory,
+        "evidence": {"file": rule["file"], "line_start": rule["line_start"], "line_end": rule["line_end"]},
+    }
 
 
 @app.get("/api/projects/{pid}/fixtures")

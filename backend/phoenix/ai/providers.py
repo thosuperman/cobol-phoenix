@@ -76,7 +76,11 @@ class OpenAICompatibleProvider:
         headers = {"Content-Type": "application/json"}
         if self.api_key:
             headers["Authorization"] = f"Bearer {self.api_key}"
-        body = {"model": self.model, "messages": [{"role": "system", "content": SYSTEM_PROMPT}, {"role": "user", "content": _user_prompt(rule, snippet)}], "temperature": 0}
+        body = {
+            "model": self.model,
+            "messages": [{"role": "system", "content": SYSTEM_PROMPT}, {"role": "user", "content": _user_prompt(rule, snippet)}],
+            "temperature": 0,
+        }
         r = httpx.post(f"{self.base_url}/chat/completions", json=body, headers=headers, timeout=self.timeout)
         r.raise_for_status()
         text = r.json()["choices"][0]["message"]["content"].strip()

@@ -139,7 +139,9 @@ class Field:
     kind = "field"
     numeric = False
 
-    def __init__(self, region: Region, offset: int, size: int, name: str = "", dims: tuple = (), occurs: int = 0, filler: bool = False, redefines: bool = False) -> None:
+    def __init__(
+        self, region: Region, offset: int, size: int, name: str = "", dims: tuple = (), occurs: int = 0, filler: bool = False, redefines: bool = False
+    ) -> None:
         self.region = region
         self.offset = offset
         self.size = size
@@ -640,7 +642,7 @@ def move(src, dst: Field) -> None:
             dst.set_raw(src.fill(dst.size).encode("latin-1"))
         return
     if isinstance(dst, NumericBase) and not isinstance(dst, Group):
-        if isinstance(src, (Decimal, int, NumLit, NumericBase)):
+        if isinstance(src, Decimal | int | NumLit | NumericBase):
             dst.store(num(src))
             return
         # alphanumeric -> numeric
@@ -654,7 +656,7 @@ def move(src, dst: Field) -> None:
         dst.set_raw(_text_bytes(src).ljust(dst.size, b" ")[: dst.size])
         return
     # alphanumeric receiving field
-    if isinstance(src, NumericBase) and isinstance(dst, (Alnum, AlnumEdited, Field)) and not isinstance(dst, NumericBase):
+    if isinstance(src, NumericBase) and isinstance(dst, Alnum | AlnumEdited | Field) and not isinstance(dst, NumericBase):
         dst.set_text(src.alnum_text())
         return
     if isinstance(src, Decimal):
@@ -732,14 +734,14 @@ def _move_alnum_to_display(s: str, dst: Numeric) -> None:
 
 # ---------------------------------------------------------------- comparison
 def _is_num(v) -> bool:
-    return isinstance(v, (Decimal, int, NumLit)) or (isinstance(v, NumericBase) and not isinstance(v, Edited))
+    return isinstance(v, Decimal | int | NumLit) or (isinstance(v, NumericBase) and not isinstance(v, Edited))
 
 
 def cmp(a, b) -> int:
     """Compare two operands with COBOL rules; returns -1, 0 or 1."""
     if isinstance(a, Fig) and not isinstance(b, Fig):
         return -cmp(b, a)
-    if isinstance(a, AllOf) and not isinstance(b, (Fig, AllOf)):
+    if isinstance(a, AllOf) and not isinstance(b, Fig | AllOf):
         return -cmp(b, a)
     if isinstance(b, Fig):
         if b is ZEROS and _is_num(a):
@@ -774,7 +776,7 @@ def _cmp_text(v) -> str:
 
 
 def is_numeric_class(f) -> bool:
-    if isinstance(f, (Packed, Binary)):
+    if isinstance(f, Packed | Binary):
         return True
     s = f.raw() if isinstance(f, Field) else str(f).encode("latin-1")
     if not s:

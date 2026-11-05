@@ -6,8 +6,8 @@ import itertools
 import re
 from decimal import Decimal
 
-from ..codegen import phoenix_runtime as rt
 from ..cobol import ir
+from ..codegen import phoenix_runtime as rt
 
 _SUB_RE = re.compile(r"^([A-Z0-9-]+)(?:\(([\d ,]+)\))?$")
 

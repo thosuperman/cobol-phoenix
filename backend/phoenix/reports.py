@@ -26,7 +26,13 @@ def rules_markdown(project: dict, rules: list[dict]) -> str:
         out += [f"## {prog}", ""]
         for r in rs:
             v = r.get("verification", {})
-            out += [f"### {r['name']}", "", f"- **Source:** `{r['file']}` lines {r['line_start']}–{r['line_end']} (paragraph `{r['paragraph']}`)", f"- **Status:** {v.get('status', r['status'])} (statement coverage {v.get('coverage_pct', 0)}%)", f"- **Description:** {r['description']} _({r['description_source']})_"]
+            out += [
+                f"### {r['name']}",
+                "",
+                f"- **Source:** `{r['file']}` lines {r['line_start']}–{r['line_end']} (paragraph `{r['paragraph']}`)",
+                f"- **Status:** {v.get('status', r['status'])} (statement coverage {v.get('coverage_pct', 0)}%)",
+                f"- **Description:** {r['description']} _({r['description_source']})_",
+            ]
             if r["inputs"]:
                 out.append(f"- **Inputs:** {', '.join(r['inputs'])}")
             if r["outputs"]:
@@ -84,7 +90,9 @@ def verification_markdown(project: dict, report: dict, mutation: dict | None) ->
         for c in failed[:50]:
             out += [f"### {c['id']} — {c['description']}", "", "| Parameter | Field | COBOL | Python | Δ | Source |", "|---|---|---|---|---|---|"]
             for d in c["diffs"][:20]:
-                out.append(f"| {d.get('param', '')} | {d.get('field', '')} | `{str(d.get('cobol', '')).strip()[:60]}` | `{str(d.get('python', '')).strip()[:60]}` | {d.get('delta', '')} | {d.get('loc', '')} |")
+                out.append(
+                    f"| {d.get('param', '')} | {d.get('field', '')} | `{str(d.get('cobol', '')).strip()[:60]}` | `{str(d.get('python', '')).strip()[:60]}` | {d.get('delta', '')} | {d.get('loc', '')} |"
+                )
             out.append("")
     other = [c for c in report["cases"] if c["status"] in ("NOT_VERIFIABLE", "UNSUPPORTED")]
     if other:
@@ -132,7 +140,9 @@ def migration_markdown(project: dict, analysis: dict, rules: list[dict], generat
     ]
     for p in analysis["programs"]:
         m = p["metrics"]
-        out.append(f"| {p['program_id']} | `{p['file']}` | {p['kind']} | {m['statements']} | {m['decision_points']} | {m['score']} | {m['band']} | {p['rules']} | {p['unsupported']} |")
+        out.append(
+            f"| {p['program_id']} | `{p['file']}` | {p['kind']} | {m['statements']} | {m['decision_points']} | {m['score']} | {m['band']} | {p['rules']} | {p['unsupported']} |"
+        )
     if analysis["unsupported"]:
         out += ["", "## Unsupported constructs", "", "| Program | Location | Construct | Category | Reason |", "|---|---|---|---|---|"]
         for u in analysis["unsupported"][:200]:
@@ -142,13 +152,19 @@ def migration_markdown(project: dict, analysis: dict, rules: list[dict], generat
         out += ["| Generation | Entry | Mode | Statements translated | Unsupported | Mutation |", "|---|---|---|---|---|---|"]
         for g in generations:
             sm = g["summary"]
-            out.append(f"| {g['id']} | {g['entry']} | {sm.get('mode')} | {sm.get('statements')} | {len(sm.get('unsupported', []))} | {g.get('mutation_id') or '—'} |")
+            out.append(
+                f"| {g['id']} | {g['entry']} | {sm.get('mode')} | {sm.get('statements')} | {len(sm.get('unsupported', []))} | {g.get('mutation_id') or '—'} |"
+            )
     else:
         out.append("No Python service generated yet.")
     out += ["", "## Verification", ""]
     if latest:
         s = latest["summary"]
-        out += [f"Latest run ({latest['entry']}): {s['verified']}/{s['total']} VERIFIED, {s['failed']} FAILED, {s['not_verifiable']} NOT_VERIFIABLE, {s['unsupported']} UNSUPPORTED; statement coverage {s['coverage_pct']}%.", "", f"> {latest['claim']}"]
+        out += [
+            f"Latest run ({latest['entry']}): {s['verified']}/{s['total']} VERIFIED, {s['failed']} FAILED, {s['not_verifiable']} NOT_VERIFIABLE, {s['unsupported']} UNSUPPORTED; statement coverage {s['coverage_pct']}%.",
+            "",
+            f"> {latest['claim']}",
+        ]
     else:
         out.append("No verification run yet.")
     status_counts: dict[str, int] = {}
@@ -156,5 +172,12 @@ def migration_markdown(project: dict, analysis: dict, rules: list[dict], generat
         st = r.get("verification", {}).get("status", "NOT_RUN")
         status_counts[st] = status_counts.get(st, 0) + 1
     out += ["", "## Business rule status", "", "| Status | Rules |", "|---|---|"] + [f"| {k} | {v} |" for k, v in sorted(status_counts.items())]
-    out += ["", "## Recommended next steps", "", "1. Add fixtures for rules marked NOT_EXERCISED and for surviving mutants.", "2. Replace or isolate unsupported constructs (file I/O, embedded SQL) behind adapters before migrating those programs.", "3. Keep the differential suite in CI while the COBOL system is still authoritative."]
+    out += [
+        "",
+        "## Recommended next steps",
+        "",
+        "1. Add fixtures for rules marked NOT_EXERCISED and for surviving mutants.",
+        "2. Replace or isolate unsupported constructs (file I/O, embedded SQL) behind adapters before migrating those programs.",
+        "3. Keep the differential suite in CI while the COBOL system is still authoritative.",
+    ]
     return "\n".join(out) + "\n"

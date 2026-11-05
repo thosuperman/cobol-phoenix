@@ -126,7 +126,7 @@ class CandidateCollector:
                     self.add(parent_id, "?", f"no 88-level of {it.name} matches")
         elif isinstance(c, ir.Not):
             self.visit_cond(c.operand, where)
-        elif isinstance(c, (ir.And, ir.Or)):
+        elif isinstance(c, ir.And | ir.Or):
             self.visit_cond(c.left, where)
             self.visit_cond(c.right, where)
 

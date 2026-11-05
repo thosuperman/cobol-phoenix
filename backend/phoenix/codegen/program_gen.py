@@ -397,7 +397,7 @@ class ProgramGenerator:
     def is_numeric_expr(self, e) -> bool:
         if isinstance(e, ir.Literal):
             return e.kind == "number" or (e.kind == "figurative" and e.value == "ZERO")
-        if isinstance(e, (ir.BinOp, ir.Neg)):
+        if isinstance(e, ir.BinOp | ir.Neg):
             return True
         if isinstance(e, ir.FuncCall):
             return e.name not in ("TRIM", "UPPER-CASE", "LOWER-CASE", "REVERSE", "CONCATENATE", "CURRENT-DATE", "WHEN-COMPILED", "CHAR")
@@ -690,7 +690,7 @@ class ProgramGenerator:
                 else:
                     raise _GenUnsupported("EVALUATE TRUE with a value object")
                 continue
-            if isinstance(subj, (ir.Rel, ir.CondRef, ir.ClassCond, ir.Not, ir.And, ir.Or)):
+            if isinstance(subj, ir.Rel | ir.CondRef | ir.ClassCond | ir.Not | ir.And | ir.Or):
                 c = self.cond(subj)
                 if obj.kind == "true":
                     parts.append(c)
@@ -700,7 +700,7 @@ class ProgramGenerator:
                     raise _GenUnsupported("condition subject with value object")
                 continue
             numeric = self.is_numeric_expr(subj)
-            sv = self.num(subj) if isinstance(subj, (ir.BinOp, ir.Neg)) else self.operand(subj)
+            sv = self.num(subj) if isinstance(subj, ir.BinOp | ir.Neg) else self.operand(subj)
             if obj.kind == "value":
                 if numeric and self.is_numeric_expr(obj.value):
                     m = f"{self.num(subj)} == {self.num(obj.value)}"
@@ -900,7 +900,7 @@ class _GenUnsupported(Exception):
 
 
 def _expr_loc(e) -> ir.Loc | None:
-    if isinstance(e, (ir.Literal, ir.Ref, ir.FuncCall)):
+    if isinstance(e, ir.Literal | ir.Ref | ir.FuncCall):
         return e.loc
     if isinstance(e, ir.BinOp):
         return _expr_loc(e.left) or _expr_loc(e.right)
@@ -940,7 +940,7 @@ def mutation_candidates(prog: ir.Program) -> list[Mutation]:
                 add("relop", getattr(c.left, "loc", None) or getattr(c.right, "loc", None), f"replace '{c.op}' with '{flipped}'")
         elif isinstance(c, ir.Not):
             visit_cond(c.operand)
-        elif isinstance(c, (ir.And, ir.Or)):
+        elif isinstance(c, ir.And | ir.Or):
             visit_cond(c.left)
             visit_cond(c.right)
 

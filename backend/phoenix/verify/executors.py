@@ -100,7 +100,9 @@ def _parse_result(executor: str, data: dict) -> CobolResult:
         compile_command=comp.get("command", ""),
     )
     for c in data.get("cases", []):
-        res.cases.append(CobolCaseResult(c.get("id"), c.get("stdout", ""), c.get("stderr", ""), c.get("rc"), bool(c.get("timed_out")), int(c.get("duration_ms", 0))))
+        res.cases.append(
+            CobolCaseResult(c.get("id"), c.get("stdout", ""), c.get("stderr", ""), c.get("rc"), bool(c.get("timed_out")), int(c.get("duration_ms", 0)))
+        )
     return res
 
 
@@ -169,7 +171,9 @@ class DockerExecutor(Executor):
                 return CobolResult(available=True, executor=self.name, error="sandbox exceeded its overall time budget")
             result_file = job_dir / "result.json"
             if not result_file.exists():
-                return CobolResult(available=True, executor=self.name, error=f"runner produced no result (rc={r.returncode}): {r.stderr.decode('latin-1')[-2000:]}")
+                return CobolResult(
+                    available=True, executor=self.name, error=f"runner produced no result (rc={r.returncode}): {r.stderr.decode('latin-1')[-2000:]}"
+                )
             return _parse_result(self.name, json.loads(result_file.read_text()))
         finally:
             shutil.rmtree(job_dir, ignore_errors=True)

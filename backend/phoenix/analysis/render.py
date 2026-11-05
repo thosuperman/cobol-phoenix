@@ -53,7 +53,7 @@ def cond(c) -> str:
         return f"{expr(c.operand)} IS {'NOT ' if c.negated else ''}{c.cls}"
     if isinstance(c, ir.Not):
         inner = cond(c.operand)
-        return f"NOT {inner}" if isinstance(c.operand, (ir.CondRef, ir.Rel)) else f"NOT ({inner})"
+        return f"NOT {inner}" if isinstance(c.operand, ir.CondRef | ir.Rel) else f"NOT ({inner})"
     if isinstance(c, ir.And):
         return f"{_cw(c.left, 'AND')} AND {_cw(c.right, 'AND')}"
     if isinstance(c, ir.Or):
@@ -84,7 +84,7 @@ def when_object(o: ir.WhenObject) -> str:
 def subject(s) -> str:
     if isinstance(s, str):
         return s
-    if isinstance(s, (ir.Rel, ir.CondRef, ir.ClassCond, ir.Not, ir.And, ir.Or)):
+    if isinstance(s, ir.Rel | ir.CondRef | ir.ClassCond | ir.Not | ir.And | ir.Or):
         return cond(s)
     return expr(s)
 

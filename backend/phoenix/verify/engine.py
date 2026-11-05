@@ -19,7 +19,7 @@ from ..cobol.project import ProjectParse
 from ..codegen.program_gen import Mutation, ProgramGenerator, mutation_candidates
 from ..codegen.project_gen import GeneratedProject, call_tree
 from .executors import CobolCase, CobolJob, CobolResult, Executor
-from .harness import HARNESS_ID, harness_source, split_harness_output
+from .harness import harness_source, split_harness_output
 from .records import RecordCodec
 from .testgen import TestCase
 
@@ -95,7 +95,15 @@ def compare_linkage(cobol_out: str, py_out: str, codecs: list[RecordCodec]) -> t
         note = "both programs terminated before returning (STOP RUN or abnormal end)"
     elif c_params is None or p_params is None:
         side = "COBOL" if c_params is None else "Python"
-        diffs.append({"param": "-", "field": "(control flow)", "cobol": "no return" if c_params is None else "returned", "python": "no return" if p_params is None else "returned", "note": f"{side} did not return from the CALL"})
+        diffs.append(
+            {
+                "param": "-",
+                "field": "(control flow)",
+                "cobol": "no return" if c_params is None else "returned",
+                "python": "no return" if p_params is None else "returned",
+                "note": f"{side} did not return from the CALL",
+            }
+        )
     else:
         for codec, cl, pl in zip(codecs, c_params, p_params, strict=False):
             if cl == pl:
@@ -150,7 +158,19 @@ def statement_keys(gp_trace: list[dict]) -> dict[str, dict]:
     keys: dict[str, dict] = {}
     for t in gp_trace:
         key = f"{t['cobol_file']}:{t['cobol_start']}"
-        keys.setdefault(key, {"file": t["cobol_file"], "line": t["cobol_start"], "end_line": t["cobol_end"], "construct": t["construct"], "paragraph": t["paragraph"], "program": t["program"], "python_file": t["python_file"], "python_line": t["python_start"]})
+        keys.setdefault(
+            key,
+            {
+                "file": t["cobol_file"],
+                "line": t["cobol_start"],
+                "end_line": t["cobol_end"],
+                "construct": t["construct"],
+                "paragraph": t["paragraph"],
+                "program": t["program"],
+                "python_file": t["python_file"],
+                "python_line": t["python_start"],
+            },
+        )
     return keys
 
 
@@ -174,7 +194,9 @@ def verify(
     display_only = all(p.display_only for p in gp.interface.params)
     if cobol_result is None:
         if mode == "harness" and not display_only:
-            cobol_result = CobolResult(available=False, executor=executor.name, error="USING records contain binary/packed fields; line-based harness cannot transport them")
+            cobol_result = CobolResult(
+                available=False, executor=executor.name, error="USING records contain binary/packed fields; line-based harness cannot transport them"
+            )
         else:
             progress(f"compiling and running {len(cases)} cases with GnuCOBOL ({executor.name})")
             cobol_result = executor.run(build_cobol_job(pp, entry, mode, cases))
@@ -210,7 +232,9 @@ def verify(
                 ok, diffs, note = compare_main(cob.stdout, py["stdout"])
             if cobol_err != py_err:
                 ok = False
-                diffs.append({"param": "-", "field": "(error behaviour)", "cobol": f"rc={cob.rc} {cob.stderr.strip()[:200]}", "python": py.get("error") or "completed"})
+                diffs.append(
+                    {"param": "-", "field": "(error behaviour)", "cobol": f"rc={cob.rc} {cob.stderr.strip()[:200]}", "python": py.get("error") or "completed"}
+                )
             elif cobol_err and py_err:
                 note = (note + "; " if note else "") + f"both runtimes reported an error (COBOL rc={cob.rc})"
             status = VERIFIED if ok else FAILED
@@ -235,7 +259,12 @@ def verify(
         "mode": mode,
         "fixed_datetime": FIXED_DATETIME,
         "duration_s": round(time.time() - started, 2),
-        "executor": {"name": cobol_result.executor, "available": cobol_result.available, "error": cobol_result.error, "cobc_version": cobol_result.cobc_version},
+        "executor": {
+            "name": cobol_result.executor,
+            "available": cobol_result.available,
+            "error": cobol_result.error,
+            "cobc_version": cobol_result.cobc_version,
+        },
         "compile": {"ok": cobol_result.compiled, "command": cobol_result.compile_command, "log": _clean_stderr(cobol_result.compile_log)},
         "summary": {
             "total": len(cases),
@@ -368,7 +397,9 @@ def rule_status(rules: list[dict], reports: list[dict]) -> list[dict]:
     * UNSUPPORTED   - the rule contains unsupported constructs
     """
     cases = [c for rep in reports for c in rep.get("cases", [])]
-    executed_by: list[tuple[set[str], str, set[str] | None]] = [(set(c.get("executed", [])), c["status"], _diff_fields(c) if c["status"] == FAILED else set()) for c in cases]
+    executed_by: list[tuple[set[str], str, set[str] | None]] = [
+        (set(c.get("executed", [])), c["status"], _diff_fields(c) if c["status"] == FAILED else set()) for c in cases
+    ]
     out = []
     for r in rules:
         keys = set(r.get("statement_keys", []))
@@ -395,7 +426,18 @@ def rule_status(rules: list[dict], reports: list[dict]) -> list[dict]:
         else:
             st = "NOT_EXERCISED"
         n = len(keys)
-        out.append({**r, "verification": {"status": st, "statements": n, "executed": len(executed_keys), "coverage_pct": round(100 * len(executed_keys) / n, 1) if n else 0.0, "failing_cases": failing_cases}})
+        out.append(
+            {
+                **r,
+                "verification": {
+                    "status": st,
+                    "statements": n,
+                    "executed": len(executed_keys),
+                    "coverage_pct": round(100 * len(executed_keys) / n, 1) if n else 0.0,
+                    "failing_cases": failing_cases,
+                },
+            }
+        )
     return out
 
 

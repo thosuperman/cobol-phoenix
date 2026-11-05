@@ -95,9 +95,7 @@ def expand_copies(
     while i < n:
         t = tokens[i]
         if t.is_word("REPLACE") and (i == 0 or tokens[i - 1].kind == TK.PERIOD):
-            res.diagnostics.append(
-                Diagnostic(Severity.WARNING, "PP003", "REPLACE statement is not supported and was ignored", t.file, t.line)
-            )
+            res.diagnostics.append(Diagnostic(Severity.WARNING, "PP003", "REPLACE statement is not supported and was ignored", t.file, t.line))
             while i < n and tokens[i].kind != TK.PERIOD:
                 i += 1
             i += 1

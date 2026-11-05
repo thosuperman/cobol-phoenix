@@ -325,6 +325,7 @@ class Parser:
                 continue
             self.diag(Severity.WARNING, "DAT002", f"unexpected token {t.value!r} in DATA DIVISION", t)
             self.i += 1
+
         # USAGE on a group applies to its elementary subordinates
         def propagate(node: ir.DataItem, usage: str | None) -> None:
             if node.children:
@@ -469,14 +470,18 @@ class Parser:
                         self.next()
                         self.accept_word("KEY")
                         self.accept_word("IS")
-                        while self.peek() and self.peek().kind == TK.WORD and not self.at_word(
-                            "INDEXED", "ASCENDING", "DESCENDING", "PIC", "PICTURE", "VALUE", "USAGE", "COMP", "COMP-3"
+                        while (
+                            self.peek()
+                            and self.peek().kind == TK.WORD
+                            and not self.at_word("INDEXED", "ASCENDING", "DESCENDING", "PIC", "PICTURE", "VALUE", "USAGE", "COMP", "COMP-3")
                         ):
                             self.next()
                     elif self.accept_word("INDEXED"):
                         self.accept_word("BY")
-                        while self.peek() and self.peek().kind == TK.WORD and not self.at_word(
-                            "PIC", "PICTURE", "VALUE", "USAGE", "ASCENDING", "DESCENDING", "COMP", "COMP-3"
+                        while (
+                            self.peek()
+                            and self.peek().kind == TK.WORD
+                            and not self.at_word("PIC", "PICTURE", "VALUE", "USAGE", "ASCENDING", "DESCENDING", "COMP", "COMP-3")
                         ):
                             item.indexed_by.append(self.next().value.upper())
                     else:
@@ -917,7 +922,7 @@ class Parser:
         while c is not None:
             if isinstance(c, ir.Rel):
                 return c
-            if isinstance(c, (ir.And, ir.Or)):
+            if isinstance(c, ir.And | ir.Or):
                 c = c.right
             elif isinstance(c, ir.Not):
                 c = c.operand
@@ -1073,7 +1078,31 @@ class Parser:
         if t is None or t.kind != TK.WORD:
             return False
         u = t.value.upper()
-        if u in STOP_WORDS or u in ("ROUNDED", "GIVING", "FROM", "TO", "BY", "INTO", "REMAINDER", "USING", "DELIMITED", "WITH", "POINTER", "UPON", "RETURNING", "THRU", "THROUGH", "TIMES", "UNTIL", "VARYING", "AFTER", "ALSO", "OR", "AND", "END"):
+        if u in STOP_WORDS or u in (
+            "ROUNDED",
+            "GIVING",
+            "FROM",
+            "TO",
+            "BY",
+            "INTO",
+            "REMAINDER",
+            "USING",
+            "DELIMITED",
+            "WITH",
+            "POINTER",
+            "UPON",
+            "RETURNING",
+            "THRU",
+            "THROUGH",
+            "TIMES",
+            "UNTIL",
+            "VARYING",
+            "AFTER",
+            "ALSO",
+            "OR",
+            "AND",
+            "END",
+        ):
             return False
         if u in self.paragraph_names and self.peek(1) and self.peek(1).kind == TK.PERIOD:
             return False
@@ -1253,7 +1282,12 @@ class Parser:
         start = self.next()
         st = ir.Perform(loc=self.loc(start))
         t = self.peek()
-        if t is not None and t.kind in (TK.WORD, TK.NUMBER) and t.value.upper() in (self.paragraph_names | self.section_names) and not t.is_word("VARYING", "UNTIL", "WITH", "TEST"):
+        if (
+            t is not None
+            and t.kind in (TK.WORD, TK.NUMBER)
+            and t.value.upper() in (self.paragraph_names | self.section_names)
+            and not t.is_word("VARYING", "UNTIL", "WITH", "TEST")
+        ):
             st.target = self.next().value.upper()
             if self.accept_word("THRU", "THROUGH"):
                 st.thru = self.next().value.upper()
@@ -1277,7 +1311,9 @@ class Parser:
                 st.varying.append(self._varying())
         else:
             t = self.peek()
-            if t is not None and (t.kind == TK.NUMBER or (t.kind == TK.WORD and t.value.upper() not in ALL_VERBS and self.peek(1) is not None and self._times_ahead())):
+            if t is not None and (
+                t.kind == TK.NUMBER or (t.kind == TK.WORD and t.value.upper() not in ALL_VERBS and self.peek(1) is not None and self._times_ahead())
+            ):
                 st.times = self.parse_operand()
                 self.expect_word("TIMES")
 
@@ -1362,7 +1398,12 @@ class Parser:
         start = self.next()
         self.accept_word("TO")
         target = self.next().value.upper()
-        if self.at_word("DEPENDING") or (self.peek() and self.peek().kind == TK.WORD and self.peek().value.upper() in self.paragraph_names and not (self.peek(1) and self.peek(1).kind == TK.PERIOD)):
+        if self.at_word("DEPENDING") or (
+            self.peek()
+            and self.peek().kind == TK.WORD
+            and self.peek().value.upper() in self.paragraph_names
+            and not (self.peek(1) and self.peek(1).kind == TK.PERIOD)
+        ):
             self.i -= 1
             while self._at_identifier() or self.at_word("DEPENDING", "ON"):
                 self.next()
@@ -1388,7 +1429,13 @@ class Parser:
                 self.expect_word("ADVANCING")
                 st.no_advancing = True
                 continue
-            if self.at_kind(TK.STRING) or self.at_kind(TK.NUMBER) or self.at_word("FUNCTION") or self._at_identifier() or (self.peek().kind == TK.WORD and self.peek().value.upper() in FIGURATIVES):
+            if (
+                self.at_kind(TK.STRING)
+                or self.at_kind(TK.NUMBER)
+                or self.at_word("FUNCTION")
+                or self._at_identifier()
+                or (self.peek().kind == TK.WORD and self.peek().value.upper() in FIGURATIVES)
+            ):
                 st.operands.append(self.parse_operand())
                 continue
             break
@@ -1551,7 +1598,7 @@ class Parser:
                 res_expr(c.operand)
             elif isinstance(c, ir.Not):
                 res_cond(c.operand)
-            elif isinstance(c, (ir.And, ir.Or)):
+            elif isinstance(c, ir.And | ir.Or):
                 res_cond(c.left)
                 res_cond(c.right)
 
@@ -1579,7 +1626,7 @@ class Parser:
                 for subj in s.subjects:
                     if isinstance(subj, str):
                         continue
-                    if isinstance(subj, (ir.Rel, ir.CondRef, ir.ClassCond, ir.Not, ir.And, ir.Or)):
+                    if isinstance(subj, ir.Rel | ir.CondRef | ir.ClassCond | ir.Not | ir.And | ir.Or):
                         res_cond(subj)
                     else:
                         res_expr(subj)
@@ -1645,7 +1692,6 @@ class Parser:
             else:
                 self.diag(Severity.ERROR, "RES004", f"USING parameter {name} not declared", None)
         prog.using = resolved_using
-        del ancestors
 
     def _tok_for(self, loc: ir.Loc | None) -> Token | None:
         if loc is None:

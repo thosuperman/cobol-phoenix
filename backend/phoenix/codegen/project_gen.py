@@ -206,7 +206,9 @@ class SchemaWriter:
             if isinstance(n, InterfaceTable):
                 sub = self.model(f"{name}{_camel(n.name)}Item", n.children, for_input)
                 lim = f", max_length={n.occurs}" if for_input else ""
-                body.append(f"    {n.py}: list[{sub}] = Field(default_factory=list{lim}, description={('COBOL ' + n.name + ' OCCURS ' + str(n.occurs) + ' (' + n.loc + ')')!r})")
+                body.append(
+                    f"    {n.py}: list[{sub}] = Field(default_factory=list{lim}, description={('COBOL ' + n.name + ' OCCURS ' + str(n.occurs) + ' (' + n.loc + ')')!r})"
+                )
             else:
                 body.append(self.field_decl(n, for_input))
         cls = name
@@ -258,7 +260,17 @@ def generate_project(pp: ProjectParse, entry: str, project_name: str, mutation: 
     for m in modules:
         for t in m.trace:
             traceability.append(
-                {"python_file": f"app/programs/{m.module}.py", "python_start": t.py_start, "python_end": t.py_end, "cobol_file": t.file, "cobol_start": t.line, "cobol_end": t.end_line, "construct": t.kind, "paragraph": t.paragraph, "program": m.program_id}
+                {
+                    "python_file": f"app/programs/{m.module}.py",
+                    "python_start": t.py_start,
+                    "python_end": t.py_end,
+                    "cobol_file": t.file,
+                    "cobol_start": t.line,
+                    "cobol_end": t.end_line,
+                    "construct": t.kind,
+                    "paragraph": t.paragraph,
+                    "program": m.program_id,
+                }
             )
     files["traceability.json"] = json.dumps(traceability, indent=1)
     cases = fixtures or []
@@ -458,7 +470,7 @@ def traceability() -> list[dict]:
 
 def _test_api(iface: Interface) -> str:
     slug = iface.entry.lower().replace("_", "-")
-    return f'''from fastapi.testclient import TestClient
+    return f"""from fastapi.testclient import TestClient
 
 from app.main import app
 
@@ -486,10 +498,19 @@ def test_traceability_is_exposed() -> None:
     r = client.get("/api/v1/traceability")
     assert r.status_code == 200
     assert len(r.json()) > 0
-'''
+"""
 
 
-def _readme(name: str, entry: str, order: list[str], missing: list[str], iface: Interface, modules: list[GeneratedModule], unsupported: list[dict], mutation: Mutation | None) -> str:
+def _readme(
+    name: str,
+    entry: str,
+    order: list[str],
+    missing: list[str],
+    iface: Interface,
+    modules: list[GeneratedModule],
+    unsupported: list[dict],
+    mutation: Mutation | None,
+) -> str:
     slug = entry.lower().replace("_", "-")
     lines = [
         f"# {name}",
@@ -536,7 +557,13 @@ def _readme(name: str, entry: str, order: list[str], missing: list[str], iface: 
             lines.append(f"| {u['program']} | {u['file']}:{u['line']} | {u['construct']} | {u['reason']} |")
     else:
         lines.append("None — every statement in the call tree was translated.")
-    lines += ["", "## Verification", "", "`tests/cases.json` contains the differential cases; when produced by a verification run, expected outputs come from the original program executed by GnuCOBOL.", ""]
+    lines += [
+        "",
+        "## Verification",
+        "",
+        "`tests/cases.json` contains the differential cases; when produced by a verification run, expected outputs come from the original program executed by GnuCOBOL.",
+        "",
+    ]
     return "\n".join(lines)
 
 

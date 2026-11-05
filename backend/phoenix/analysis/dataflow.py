@@ -50,13 +50,13 @@ def cond_refs(c, out: set[str], conds: set[str]) -> None:
         expr_refs(c.operand, out, conds)
     elif isinstance(c, ir.Not):
         cond_refs(c.operand, out, conds)
-    elif isinstance(c, (ir.And, ir.Or)):
+    elif isinstance(c, ir.And | ir.Or):
         cond_refs(c.left, out, conds)
         cond_refs(c.right, out, conds)
 
 
 def _is_cond(x) -> bool:
-    return isinstance(x, (ir.Rel, ir.CondRef, ir.ClassCond, ir.Not, ir.And, ir.Or))
+    return isinstance(x, ir.Rel | ir.CondRef | ir.ClassCond | ir.Not | ir.And | ir.Or)
 
 
 def stmt_access(s: ir.Stmt) -> Access:

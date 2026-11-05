@@ -461,7 +461,7 @@ def walk_statements(stmts: list[Stmt]):
                 yield from walk_statements(w.body)
         elif isinstance(s, Perform) and s.body:
             yield from walk_statements(s.body)
-        elif isinstance(s, (Compute, Arith)):
+        elif isinstance(s, Compute | Arith):
             yield from walk_statements(s.on_size_error or [])
             yield from walk_statements(s.not_on_size_error or [])
         elif isinstance(s, Call):
@@ -478,7 +478,7 @@ def to_jsonable(obj: Any) -> Any:
         for f in dataclasses.fields(obj):
             d[f.name] = to_jsonable(getattr(obj, f.name))
         return d
-    if isinstance(obj, (list, tuple)):
+    if isinstance(obj, list | tuple):
         return [to_jsonable(x) for x in obj]
     if isinstance(obj, dict):
         return {str(k): to_jsonable(v) for k, v in obj.items()}

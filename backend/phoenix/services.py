@@ -224,7 +224,10 @@ def rules_with_status(pid: str) -> list[dict]:
             latest.setdefault(r.generation.entry, r)
         reports = [json.loads(r.report_json) for r in latest.values() if r.report_json]
     if not reports:
-        return [{**r, "verification": {"status": "NOT_RUN", "statements": len(r["statement_keys"]), "executed": 0, "coverage_pct": 0.0, "failing_cases": 0}} for r in rules]
+        return [
+            {**r, "verification": {"status": "NOT_RUN", "statements": len(r["statement_keys"]), "executed": 0, "coverage_pct": 0.0, "failing_cases": 0}}
+            for r in rules
+        ]
     return rule_status(rules, reports)
 
 
@@ -264,7 +267,9 @@ def create_generation(pid: str, entry: str, name: str | None, mutation_id: str |
     except GenerationError as exc:
         raise Conflict(str(exc))
     with session() as db:
-        g = Generation(project_id=pid, entry=entry, name=proj_name, mutation_id=mutation.id if mutation else None, mutation_detail=mutation.detail if mutation else None)
+        g = Generation(
+            project_id=pid, entry=entry, name=proj_name, mutation_id=mutation.id if mutation else None, mutation_detail=mutation.detail if mutation else None
+        )
         db.add(g)
         db.flush()
         out = generation_dir(s, g.id)
@@ -276,7 +281,9 @@ def create_generation(pid: str, entry: str, name: str | None, mutation_id: str |
             "files": sorted(gp.files),
             "statements": len(gp.traceability),
             "unsupported": gp.unsupported,
-            "modules": [{"program": m.program_id, "module": f"app/programs/{m.module}.py", "class": m.class_name, "statements": len(m.trace)} for m in gp.modules],
+            "modules": [
+                {"program": m.program_id, "module": f"app/programs/{m.module}.py", "class": m.class_name, "statements": len(m.trace)} for m in gp.modules
+            ],
             "endpoint": f"/api/v1/{entry.lower().replace('_', '-')}/execute",
             "fixtures": len(fixtures),
             "mutation": mutation.__dict__ if mutation else None,
@@ -444,7 +451,9 @@ def get_run(rid: str) -> VerificationRun:
 
 def list_runs(pid: str) -> list[tuple[VerificationRun, Generation]]:
     with session() as db:
-        rows = db.query(VerificationRun, Generation).join(Generation).filter(VerificationRun.project_id == pid).order_by(VerificationRun.created_at.desc()).all()
+        rows = (
+            db.query(VerificationRun, Generation).join(Generation).filter(VerificationRun.project_id == pid).order_by(VerificationRun.created_at.desc()).all()
+        )
         return [(r, g) for r, g in rows]
 
 

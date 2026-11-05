@@ -87,15 +87,16 @@ def detect_format(text: str) -> SourceFormat:
             free_votes += 1
             continue
         body = ln[7:]
-        if len(ln) > 72 and ln[72:].strip() and not ln[6:].lstrip().startswith("*>") and ind not in "*/":
-            # Text beyond column 72 is legal only as identification area; long
-            # code lines strongly suggest free format.
-            if "*>" not in ln[:72]:
-                free_votes += 1
-                continue
+        if len(ln) > 72 and ind not in "*/" and ln[72:].strip():
+            tail = ln[72:]
+            code72 = ln[:72].split("*>")[0]
+            # A token that crosses column 72/73, or statement syntax after column
+            # 72, means the text is not an identification area: free format.
+            if "*>" not in ln[:72] and (code72[-1:] not in (" ", "") or any(ch in tail for ch in "\"'.()=")):
+                return SourceFormat.FREE  # would be a syntax error in fixed format
         if body or ind != " ":
             fixed_votes += 1
-    return SourceFormat.FREE if free_votes > max(2, fixed_votes // 20) else SourceFormat.FIXED
+    return SourceFormat.FREE if free_votes > max(1, fixed_votes // 20) else SourceFormat.FIXED
 
 
 @dataclass(slots=True)
@@ -136,6 +137,7 @@ def logical_lines(file: str, text: str, fmt: SourceFormat, diags: list[Diagnosti
 
 
 _WORD_CHARS = set("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_")
+_TAGGED_WORD = re.compile(r"(?:[A-Za-z0-9_-]|:[A-Za-z0-9_-]+:)+")
 _NUM_RE = re.compile(r"[+-]?(\d+(\.\d+)?|\.\d+)")
 
 
@@ -275,6 +277,12 @@ class Lexer:
                     self.tokens.append(Token(TK.RPAREN, ")", self.file, ll.line, col))
                     i += 1
                     continue
+                if c == ":" or c in _WORD_CHARS:
+                    m = _TAGGED_WORD.match(s, i)
+                    if m and ":" in m.group(0) and m.group(0).count(":") % 2 == 0:
+                        self.tokens.append(Token(TK.WORD, m.group(0), self.file, ll.line, col))
+                        i = m.end()
+                        continue
                 if c == ":":
                     self.tokens.append(Token(TK.COLON, ":", self.file, ll.line, col))
                     i += 1
@@ -284,7 +292,7 @@ class Lexer:
                     # A sign directly attached to digits is part of the literal
                     # unless it follows an operand without a separating space.
                     if i == 0 or s[i - 1] in " (=":
-                        if not (prev and prev.kind in (TK.NUMBER, TK.RPAREN) and s[i - 1] != " " ):
+                        if not (prev and prev.kind in (TK.NUMBER, TK.RPAREN) and s[i - 1] != " "):
                             m = _NUM_RE.match(s, i)
                             assert m
                             end = m.end()

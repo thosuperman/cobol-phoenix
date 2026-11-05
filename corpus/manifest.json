@@ -1,0 +1,48 @@
+{
+  "description": "External COBOL repositories used as independent test inputs for COBOL Phoenix. They are fetched by scripts/fetch-corpus.sh at the pinned commits and are never copied into this repository.",
+  "repositories": [
+    {
+      "dir": "COBOL_Sample_March_2026",
+      "url": "https://github.com/mudasin1/COBOL_Sample_March_2026",
+      "commit": "be70080fb7a6079d54de71e441342a5f699ef4ea",
+      "role": "primary demonstration target (term life insurance)",
+      "license": "No license file in the repository (all rights reserved by default). Used only as an analysis/test input fetched at test time; no code is redistributed.",
+      "format": null,
+      "selected_files": ["cobol/NB-UW-001.cob", "cobol/SVC-BILL-001.cob", "cobol/CLM-ADJ-001.cob", "cobol/drivers/DRIVER-NBUW001.cob", "cobol/drivers/DRIVER-SVCBILL001.cob", "cobol/drivers/DRIVER-CLMADJ001.cob"],
+      "copybooks": ["cpy/POLDATA.cpy"],
+      "build_command": "make all   (cobc -I cpy -O2 -x -o build/bin/driver-nbuw001 cobol/drivers/DRIVER-NBUW001.cob cobol/NB-UW-001.cob, ...)",
+      "test_command": "make test   (sh tests/run-tests.sh: diffs driver stdout against tests/expected/*.out)",
+      "migration_unit": "NBUW001 - new business eligibility, rating and premium calculation (LINKAGE: WS-POLICY-MASTER-REC, LK-UW-RESULT-CODE, LK-UW-ERROR-MSG)",
+      "expected": {"programs": 6, "unsupported_constructs": 0}
+    },
+    {
+      "dir": "cobol-bank-demo",
+      "url": "https://github.com/achalc/cobol-bank-demo",
+      "commit": "5a85e528a4cebadadc7d3b87b7da6a0513b380ca",
+      "role": "independent validation corpus (interactive banking, sequential files)",
+      "license": "No license file in the repository (all rights reserved by default). Used only as an analysis/test input fetched at test time; no code is redistributed.",
+      "format": null,
+      "selected_files": ["BANKMAIN.cbl", "SEEDDATA.cbl"],
+      "copybooks": [],
+      "build_command": "make build   (cobc -x -o bankmain BANKMAIN.cbl; cobc -x -o seeddata SEEDDATA.cbl)",
+      "test_command": "make test   (bash test.sh: 53 grep-based assertions over interactive sessions)",
+      "migration_unit": null,
+      "expected": {"programs": 2, "unsupported_constructs": 159}
+    },
+    {
+      "dir": "cobol-legacy-ledger",
+      "subdir": "COBOL-BANKING",
+      "url": "https://github.com/albertdobmeyer/cobol-legacy-ledger",
+      "commit": "4ec2a1fd9a569fa694c384a6a06201f0045904b2",
+      "role": "advanced corpus used to find parser limitations (free format, file I/O, ALTER, REPORT SECTION, SORT)",
+      "license": "MIT (Copyright (c) 2026 Albert Mendes). Only fetched for testing; no code is redistributed. The repository's Python bridge and AI features are not used.",
+      "format": null,
+      "selected_files": ["src/*.cob (10 programs)", "payroll/src/*.cob (8 programs)"],
+      "copybooks": ["copybooks/*.cpy (5)", "payroll/copybooks/*.cpy (7)"],
+      "build_command": "bash scripts/build.sh   (cobc -x -free -I copybooks src/<PROG>.cob)",
+      "test_command": "./bin/SMOKETEST",
+      "migration_unit": null,
+      "expected": {"programs": 18, "unsupported_constructs": 208}
+    }
+  ]
+}

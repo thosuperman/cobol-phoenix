@@ -18,7 +18,7 @@ BANDS = [(150, "Low"), (400, "Medium"), (900, "High")]
 
 
 def _count_bool_ops(c) -> int:
-    if isinstance(c, (ir.And, ir.Or)):
+    if isinstance(c, ir.And | ir.Or):
         return 1 + _count_bool_ops(c.left) + _count_bool_ops(c.right)
     if isinstance(c, ir.Not):
         return _count_bool_ops(c.operand)
@@ -108,7 +108,18 @@ def _collect(stmts: list[ir.Stmt], lo: int, hi: int, file: str):
             yield s
 
 
-def _rule_from_statements(prog: ir.Program, par: ir.Paragraph, stmts: list[ir.Stmt], index, rid: str, name: str, desc: str | None, lo: int, hi: int, performed_by: dict[str, list[str]]) -> dict | None:
+def _rule_from_statements(
+    prog: ir.Program,
+    par: ir.Paragraph,
+    stmts: list[ir.Stmt],
+    index,
+    rid: str,
+    name: str,
+    desc: str | None,
+    lo: int,
+    hi: int,
+    performed_by: dict[str, list[str]],
+) -> dict | None:
     conditions, calculations, assignments, decision_tables = [], [], [], []
     reads: set[str] = set()
     writes: set[str] = set()
@@ -122,10 +133,12 @@ def _rule_from_statements(prog: ir.Program, par: ir.Paragraph, stmts: list[ir.St
         elif isinstance(s, ir.Evaluate):
             rows = []
             for w in s.whens:
-                actions = [render.statement(x) for x in w.body if not isinstance(x, (ir.If, ir.Evaluate))][:6]
+                actions = [render.statement(x) for x in w.body if not isinstance(x, ir.If | ir.Evaluate)][:6]
                 label = "OTHER" if w.other else " | ".join(" ALSO ".join(render.when_object(o) for o in line) for line in w.objects)
                 rows.append({"when": label, "actions": actions, "line": w.loc.line})
-            decision_tables.append({"subject": " ALSO ".join(render.subject(x) for x in s.subjects), "rows": rows, "line": s.loc.line, "end_line": s.loc.end_line})
+            decision_tables.append(
+                {"subject": " ALSO ".join(render.subject(x) for x in s.subjects), "rows": rows, "line": s.loc.line, "end_line": s.loc.end_line}
+            )
         elif isinstance(s, ir.Compute | ir.Arith):
             calculations.append({"text": render.statement(s), "line": s.loc.line, "end_line": s.loc.end_line})
         elif isinstance(s, ir.Move) and isinstance(s.source, ir.Literal):
@@ -145,7 +158,7 @@ def _rule_from_statements(prog: ir.Program, par: ir.Paragraph, stmts: list[ir.St
         if conditions:
             bits.append(f"tests {len(conditions)} condition{'s' if len(conditions) != 1 else ''}")
         if calculations:
-            outs = sorted({c['text'].split(' ')[1] for c in calculations if c['text'].startswith('COMPUTE')})
+            outs = sorted({c["text"].split(" ")[1] for c in calculations if c["text"].startswith("COMPUTE")})
             bits.append("computes " + (", ".join(outs[:4]) if outs else f"{len(calculations)} arithmetic results"))
         desc = f"{_humanize(par.name)}: " + "; ".join(bits) + "."
         desc_source = "deterministic"
@@ -192,17 +205,36 @@ def extract_rules(prog: ir.Program, sources: dict[str, list[str]]) -> list[dict]
                 lo = a["line"]
                 hi = (anns[i + 1]["line"] - 1) if i + 1 < len(anns) else par.loc.end_line
                 stmts = list(_collect(par.statements, lo, hi, par.loc.file))
-                r = _rule_from_statements(prog, par, stmts, index, f"{prog.program_id}:{a['id']}", f"{a['id']} {_humanize(par.name)}", a["text"], lo, max(hi, lo), performed_by)
+                r = _rule_from_statements(
+                    prog, par, stmts, index, f"{prog.program_id}:{a['id']}", f"{a['id']} {_humanize(par.name)}", a["text"], lo, max(hi, lo), performed_by
+                )
                 if r:
                     r["annotation"] = a["id"]
                     rules.append(r)
             # statements before the first annotation
             pre = [s for s in _flat(par.statements) if s.loc.line < anns[0]["line"] and s.loc.file == par.loc.file]
-            r = _rule_from_statements(prog, par, pre, index, f"{prog.program_id}:{par.name}", _humanize(par.name), None, par.loc.line, anns[0]["line"] - 1, performed_by) if pre else None
+            r = (
+                _rule_from_statements(
+                    prog, par, pre, index, f"{prog.program_id}:{par.name}", _humanize(par.name), None, par.loc.line, anns[0]["line"] - 1, performed_by
+                )
+                if pre
+                else None
+            )
             if r:
                 rules.append(r)
         else:
-            r = _rule_from_statements(prog, par, list(_flat(par.statements)), index, f"{prog.program_id}:{par.name}", _humanize(par.name), None, par.loc.line, par.loc.end_line, performed_by)
+            r = _rule_from_statements(
+                prog,
+                par,
+                list(_flat(par.statements)),
+                index,
+                f"{prog.program_id}:{par.name}",
+                _humanize(par.name),
+                None,
+                par.loc.line,
+                par.loc.end_line,
+                performed_by,
+            )
             if r:
                 rules.append(r)
     rules.sort(key=lambda r: (r["file"], r["line_start"]))
@@ -233,14 +265,30 @@ def analyze(pp: ProjectParse) -> dict:
 
     for f in pp.files:
         if f.kind == "copybook":
-            nodes[f"copybook:{f.path}"] = {"id": f"copybook:{f.path}", "type": "copybook", "label": PurePosixPath(f.path).name, "file": f.path, "line": 1, "lines": f.lines}
+            nodes[f"copybook:{f.path}"] = {
+                "id": f"copybook:{f.path}",
+                "type": "copybook",
+                "label": PurePosixPath(f.path).name,
+                "file": f.path,
+                "line": 1,
+                "lines": f.lines,
+            }
 
     for pprog in pp.programs:
         prog = pprog.program
         pid = prog.program_id
         nid = f"program:{pid}"
         metrics = program_metrics(prog, len(pprog.unsupported))
-        nodes[nid] = {"id": nid, "type": "program", "label": pid, "file": prog.file, "line": prog.loc.line, "end_line": prog.loc.end_line, "complexity": metrics["band"], "score": metrics["score"]}
+        nodes[nid] = {
+            "id": nid,
+            "type": "program",
+            "label": pid,
+            "file": prog.file,
+            "line": prog.loc.line,
+            "end_line": prog.loc.end_line,
+            "complexity": metrics["band"],
+            "score": metrics["score"],
+        }
         seen_copy = set()
         for c in prog.copybooks:
             tgt = f"copybook:{c['resolved']}" if c["resolved"] else f"missing-copybook:{c['name']}"
@@ -266,7 +314,15 @@ def analyze(pp: ProjectParse) -> dict:
         para_edges = []
         for par in prog.paragraphs:
             pnode = f"paragraph:{pid}:{par.name}"
-            nodes[pnode] = {"id": pnode, "type": "paragraph", "label": par.name, "program": pid, "file": par.loc.file, "line": par.loc.line, "end_line": par.loc.end_line}
+            nodes[pnode] = {
+                "id": pnode,
+                "type": "paragraph",
+                "label": par.name,
+                "program": pid,
+                "file": par.loc.file,
+                "line": par.loc.line,
+                "end_line": par.loc.end_line,
+            }
             edges.append({"source": nid, "target": pnode, "type": "contains", "file": par.loc.file, "line": par.loc.line})
             for s in ir.walk_statements(par.statements):
                 if isinstance(s, ir.Perform) and s.target:
@@ -284,16 +340,39 @@ def analyze(pp: ProjectParse) -> dict:
             elems = [i for i in prog.iter_items() if i.record == root.id and not i.children]
             r_reads = sum(1 for e in elems if e.id in total.reads)
             r_writes = sum(1 for e in elems if e.id in total.writes)
-            records.append({"name": root.name, "level": root.level, "section": root.section, "size": root.size, "file": root.loc.file, "line": root.loc.line, "fields": len(elems), "read": r_reads, "written": r_writes})
+            records.append(
+                {
+                    "name": root.name,
+                    "level": root.level,
+                    "section": root.section,
+                    "size": root.size,
+                    "file": root.loc.file,
+                    "line": root.loc.line,
+                    "fields": len(elems),
+                    "read": r_reads,
+                    "written": r_writes,
+                }
+            )
             if root.level in (1, 77) and (root.children or root.section == "LINKAGE"):
-                nodes[rnode] = {"id": rnode, "type": "record", "label": root.name, "program": pid, "file": root.loc.file, "line": root.loc.line, "section": root.section, "size": root.size}
+                nodes[rnode] = {
+                    "id": rnode,
+                    "type": "record",
+                    "label": root.name,
+                    "program": pid,
+                    "file": root.loc.file,
+                    "line": root.loc.line,
+                    "section": root.section,
+                    "size": root.size,
+                }
                 edges.append({"source": nid, "target": rnode, "type": "declares", "file": root.loc.file, "line": root.loc.line})
                 for par in prog.paragraphs:
                     pa = per[par.name]
                     ids = {e.id for e in elems}
                     if pa.reads & ids or pa.writes & ids:
                         mode = "rw" if (pa.reads & ids and pa.writes & ids) else ("w" if pa.writes & ids else "r")
-                        edges.append({"source": f"paragraph:{pid}:{par.name}", "target": rnode, "type": "uses", "mode": mode, "file": par.loc.file, "line": par.loc.line})
+                        edges.append(
+                            {"source": f"paragraph:{pid}:{par.name}", "target": rnode, "type": "uses", "mode": mode, "file": par.loc.file, "line": par.loc.line}
+                        )
         rules = extract_rules(prog, sources)
         all_rules.extend(rules)
         for u in pprog.unsupported:
@@ -311,7 +390,16 @@ def analyze(pp: ProjectParse) -> dict:
                 "source_format": prog.source_format,
                 "kind": "subprogram" if prog.using else "main",
                 "using": [index[u].name for u in prog.using if u in index],
-                "paragraphs": [{"name": p.name, "section": p.section, "line_start": p.loc.line, "line_end": p.loc.end_line, "statements": sum(1 for _ in ir.walk_statements(p.statements))} for p in prog.paragraphs],
+                "paragraphs": [
+                    {
+                        "name": p.name,
+                        "section": p.section,
+                        "line_start": p.loc.line,
+                        "line_end": p.loc.end_line,
+                        "statements": sum(1 for _ in ir.walk_statements(p.statements)),
+                    }
+                    for p in prog.paragraphs
+                ],
                 "copybooks": sorted({c["name"] for c in prog.copybooks}),
                 "calls": calls,
                 "files": [{"name": fc.name, "assign": fc.assign, "organization": fc.organization, "line": fc.loc.line} for fc in prog.files],

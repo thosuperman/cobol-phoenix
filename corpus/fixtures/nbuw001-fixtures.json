@@ -1,0 +1,337 @@
+[
+ {
+  "id": "nb-issue-ok",
+  "description": "Upstream DRIVER-NBUW001.cob SEED-NB-ISSUE-HAPPY (lines 36-52): golden case NB_ISSUE_OK",
+  "inputs": {
+   "WS-POLICY-MASTER-REC": {
+    "PM-PROCESS-DATE": "20240324",
+    "PM-POLICY-ID": "POLTEST00001",
+    "PM-INSURED-NAME": "SAMPLE INSURED",
+    "PM-PLAN-CODE": "T1001",
+    "PM-INSURED-AGE-ISSUE": "35",
+    "PM-INSURED-GENDER": "F",
+    "PM-SMOKER-IND": "N",
+    "PM-OCCUPATION-CLASS": "1",
+    "PM-BILLING-MODE": "A",
+    "PM-HIGH-RISK-AVOC-IND": "N",
+    "PM-FLAT-EXTRA-RATE": "0",
+    "PM-RIDER-COUNT": "0",
+    "PM-SUM-ASSURED": "20000000000.00"
+   },
+   "LK-UW-RESULT-CODE": {
+    "LK-UW-RESULT-CODE": "0"
+   },
+   "LK-UW-ERROR-MSG": {
+    "LK-UW-ERROR-MSG": ""
+   }
+  }
+ },
+ {
+  "id": "preferred-three-riders-monthly",
+  "description": "Preferred male non-smoker, ADB01 + WOP01 + CI001 riders, monthly billing",
+  "inputs": {
+   "WS-POLICY-MASTER-REC": {
+    "PM-PROCESS-DATE": "20240324",
+    "PM-POLICY-ID": "POLTEST00002",
+    "PM-INSURED-NAME": "SAMPLE INSURED",
+    "PM-PLAN-CODE": "T1001",
+    "PM-INSURED-AGE-ISSUE": "40",
+    "PM-INSURED-GENDER": "M",
+    "PM-SMOKER-IND": "N",
+    "PM-OCCUPATION-CLASS": "1",
+    "PM-BILLING-MODE": "M",
+    "PM-HIGH-RISK-AVOC-IND": "N",
+    "PM-FLAT-EXTRA-RATE": "0",
+    "PM-RIDER-COUNT": "3",
+    "PM-SUM-ASSURED": "20000000000.00",
+    "PM-RIDER-CODE(1)": "ADB01",
+    "PM-RIDER-SUM-ASSURED(1)": "1000000.00",
+    "PM-RIDER-CODE(2)": "WOP01",
+    "PM-RIDER-CODE(3)": "CI001",
+    "PM-RIDER-SUM-ASSURED(3)": "450000.00"
+   },
+   "LK-UW-RESULT-CODE": {
+    "LK-UW-RESULT-CODE": "0"
+   },
+   "LK-UW-ERROR-MSG": {
+    "LK-UW-ERROR-MSG": ""
+   }
+  }
+ },
+ {
+  "id": "smoker-table-flat-extra",
+  "description": "T2001 smoker, standard occupation, quarterly, flat extra 3.00 per mille: table rating and manual UW referral",
+  "inputs": {
+   "WS-POLICY-MASTER-REC": {
+    "PM-PROCESS-DATE": "20240324",
+    "PM-POLICY-ID": "POLTEST00003",
+    "PM-INSURED-NAME": "SAMPLE INSURED",
+    "PM-PLAN-CODE": "T2001",
+    "PM-INSURED-AGE-ISSUE": "50",
+    "PM-INSURED-GENDER": "F",
+    "PM-SMOKER-IND": "S",
+    "PM-OCCUPATION-CLASS": "2",
+    "PM-BILLING-MODE": "Q",
+    "PM-HIGH-RISK-AVOC-IND": "N",
+    "PM-FLAT-EXTRA-RATE": "3.00",
+    "PM-RIDER-COUNT": "0",
+    "PM-SUM-ASSURED": "15000000000.00"
+   },
+   "LK-UW-RESULT-CODE": {
+    "LK-UW-RESULT-CODE": "0"
+   },
+   "LK-UW-ERROR-MSG": {
+    "LK-UW-ERROR-MSG": ""
+   }
+  }
+ },
+ {
+  "id": "t65-hazardous-occupation",
+  "description": "T6501 is not available for hazardous occupation class 3 (NB-205)",
+  "inputs": {
+   "WS-POLICY-MASTER-REC": {
+    "PM-PROCESS-DATE": "20240324",
+    "PM-POLICY-ID": "POLTEST00004",
+    "PM-INSURED-NAME": "SAMPLE INSURED",
+    "PM-PLAN-CODE": "T6501",
+    "PM-INSURED-AGE-ISSUE": "45",
+    "PM-INSURED-GENDER": "F",
+    "PM-SMOKER-IND": "N",
+    "PM-OCCUPATION-CLASS": "3",
+    "PM-BILLING-MODE": "A",
+    "PM-HIGH-RISK-AVOC-IND": "N",
+    "PM-FLAT-EXTRA-RATE": "0",
+    "PM-RIDER-COUNT": "0",
+    "PM-SUM-ASSURED": "20000000000.00"
+   },
+   "LK-UW-RESULT-CODE": {
+    "LK-UW-RESULT-CODE": "0"
+   },
+   "LK-UW-ERROR-MSG": {
+    "LK-UW-ERROR-MSG": ""
+   }
+  }
+ },
+ {
+  "id": "ci-rider-over-cap",
+  "description": "Critical illness rider sum assured above 500,000 (NB-504)",
+  "inputs": {
+   "WS-POLICY-MASTER-REC": {
+    "PM-PROCESS-DATE": "20240324",
+    "PM-POLICY-ID": "POLTEST00005",
+    "PM-INSURED-NAME": "SAMPLE INSURED",
+    "PM-PLAN-CODE": "T1001",
+    "PM-INSURED-AGE-ISSUE": "35",
+    "PM-INSURED-GENDER": "F",
+    "PM-SMOKER-IND": "N",
+    "PM-OCCUPATION-CLASS": "1",
+    "PM-BILLING-MODE": "A",
+    "PM-HIGH-RISK-AVOC-IND": "N",
+    "PM-FLAT-EXTRA-RATE": "0",
+    "PM-RIDER-COUNT": "1",
+    "PM-SUM-ASSURED": "20000000000.00",
+    "PM-RIDER-CODE(1)": "CI001",
+    "PM-RIDER-SUM-ASSURED(1)": "600000.00"
+   },
+   "LK-UW-RESULT-CODE": {
+    "LK-UW-RESULT-CODE": "0"
+   },
+   "LK-UW-ERROR-MSG": {
+    "LK-UW-ERROR-MSG": ""
+   }
+  }
+ },
+ {
+  "id": "unknown-rider-code",
+  "description": "Rider code XYZ99 is unknown",
+  "inputs": {
+   "WS-POLICY-MASTER-REC": {
+    "PM-PROCESS-DATE": "20240324",
+    "PM-POLICY-ID": "POLTEST00006",
+    "PM-INSURED-NAME": "SAMPLE INSURED",
+    "PM-PLAN-CODE": "T1001",
+    "PM-INSURED-AGE-ISSUE": "35",
+    "PM-INSURED-GENDER": "F",
+    "PM-SMOKER-IND": "N",
+    "PM-OCCUPATION-CLASS": "1",
+    "PM-BILLING-MODE": "A",
+    "PM-HIGH-RISK-AVOC-IND": "N",
+    "PM-FLAT-EXTRA-RATE": "0",
+    "PM-RIDER-COUNT": "2",
+    "PM-SUM-ASSURED": "20000000000.00",
+    "PM-RIDER-CODE(1)": "ADB01",
+    "PM-RIDER-SUM-ASSURED(1)": "500000.00",
+    "PM-RIDER-CODE(2)": "XYZ99"
+   },
+   "LK-UW-RESULT-CODE": {
+    "LK-UW-RESULT-CODE": "0"
+   },
+   "LK-UW-ERROR-MSG": {
+    "LK-UW-ERROR-MSG": ""
+   }
+  }
+ },
+ {
+  "id": "wop-rider-age-58",
+  "description": "Waiver of premium rider outside the 18-55 band (NB-503)",
+  "inputs": {
+   "WS-POLICY-MASTER-REC": {
+    "PM-PROCESS-DATE": "20240324",
+    "PM-POLICY-ID": "POLTEST00007",
+    "PM-INSURED-NAME": "SAMPLE INSURED",
+    "PM-PLAN-CODE": "T1001",
+    "PM-INSURED-AGE-ISSUE": "58",
+    "PM-INSURED-GENDER": "F",
+    "PM-SMOKER-IND": "N",
+    "PM-OCCUPATION-CLASS": "1",
+    "PM-BILLING-MODE": "A",
+    "PM-HIGH-RISK-AVOC-IND": "N",
+    "PM-FLAT-EXTRA-RATE": "0",
+    "PM-RIDER-COUNT": "1",
+    "PM-SUM-ASSURED": "20000000000.00",
+    "PM-RIDER-CODE(1)": "WOP01"
+   },
+   "LK-UW-RESULT-CODE": {
+    "LK-UW-RESULT-CODE": "0"
+   },
+   "LK-UW-ERROR-MSG": {
+    "LK-UW-ERROR-MSG": ""
+   }
+  }
+ },
+ {
+  "id": "rider-count-six",
+  "description": "Six riders exceed the product limit (NB-501)",
+  "inputs": {
+   "WS-POLICY-MASTER-REC": {
+    "PM-PROCESS-DATE": "20240324",
+    "PM-POLICY-ID": "POLTEST00008",
+    "PM-INSURED-NAME": "SAMPLE INSURED",
+    "PM-PLAN-CODE": "T1001",
+    "PM-INSURED-AGE-ISSUE": "35",
+    "PM-INSURED-GENDER": "F",
+    "PM-SMOKER-IND": "N",
+    "PM-OCCUPATION-CLASS": "1",
+    "PM-BILLING-MODE": "A",
+    "PM-HIGH-RISK-AVOC-IND": "N",
+    "PM-FLAT-EXTRA-RATE": "0",
+    "PM-RIDER-COUNT": "6",
+    "PM-SUM-ASSURED": "20000000000.00"
+   },
+   "LK-UW-RESULT-CODE": {
+    "LK-UW-RESULT-CODE": "0"
+   },
+   "LK-UW-ERROR-MSG": {
+    "LK-UW-ERROR-MSG": ""
+   }
+  }
+ },
+ {
+  "id": "large-case-reinsurance",
+  "description": "Sum assured above 45,000,000,000.00 triggers reinsurance referral (NB-901)",
+  "inputs": {
+   "WS-POLICY-MASTER-REC": {
+    "PM-PROCESS-DATE": "20240324",
+    "PM-POLICY-ID": "POLTEST00009",
+    "PM-INSURED-NAME": "SAMPLE INSURED",
+    "PM-PLAN-CODE": "T1001",
+    "PM-INSURED-AGE-ISSUE": "35",
+    "PM-INSURED-GENDER": "F",
+    "PM-SMOKER-IND": "N",
+    "PM-OCCUPATION-CLASS": "1",
+    "PM-BILLING-MODE": "A",
+    "PM-HIGH-RISK-AVOC-IND": "N",
+    "PM-FLAT-EXTRA-RATE": "0",
+    "PM-RIDER-COUNT": "0",
+    "PM-SUM-ASSURED": "46000000000.00"
+   },
+   "LK-UW-RESULT-CODE": {
+    "LK-UW-RESULT-CODE": "0"
+   },
+   "LK-UW-ERROR-MSG": {
+    "LK-UW-ERROR-MSG": ""
+   }
+  }
+ },
+ {
+  "id": "severe-occupation-semi",
+  "description": "Severe occupation class 4 is declined (NB-206), semi-annual billing",
+  "inputs": {
+   "WS-POLICY-MASTER-REC": {
+    "PM-PROCESS-DATE": "20240324",
+    "PM-POLICY-ID": "POLTEST00010",
+    "PM-INSURED-NAME": "SAMPLE INSURED",
+    "PM-PLAN-CODE": "T1001",
+    "PM-INSURED-AGE-ISSUE": "35",
+    "PM-INSURED-GENDER": "F",
+    "PM-SMOKER-IND": "N",
+    "PM-OCCUPATION-CLASS": "4",
+    "PM-BILLING-MODE": "S",
+    "PM-HIGH-RISK-AVOC-IND": "N",
+    "PM-FLAT-EXTRA-RATE": "0",
+    "PM-RIDER-COUNT": "0",
+    "PM-SUM-ASSURED": "20000000000.00"
+   },
+   "LK-UW-RESULT-CODE": {
+    "LK-UW-RESULT-CODE": "0"
+   },
+   "LK-UW-ERROR-MSG": {
+    "LK-UW-ERROR-MSG": ""
+   }
+  }
+ },
+ {
+  "id": "t65-term-from-maturity",
+  "description": "T6501 derives the term from maturity age 65 (NB-101)",
+  "inputs": {
+   "WS-POLICY-MASTER-REC": {
+    "PM-PROCESS-DATE": "20240324",
+    "PM-POLICY-ID": "POLTEST00011",
+    "PM-INSURED-NAME": "SAMPLE INSURED",
+    "PM-PLAN-CODE": "T6501",
+    "PM-INSURED-AGE-ISSUE": "30",
+    "PM-INSURED-GENDER": "M",
+    "PM-SMOKER-IND": "N",
+    "PM-OCCUPATION-CLASS": "1",
+    "PM-BILLING-MODE": "M",
+    "PM-HIGH-RISK-AVOC-IND": "N",
+    "PM-FLAT-EXTRA-RATE": "0",
+    "PM-RIDER-COUNT": "0",
+    "PM-SUM-ASSURED": "20000000000.00"
+   },
+   "LK-UW-RESULT-CODE": {
+    "LK-UW-RESULT-CODE": "0"
+   },
+   "LK-UW-ERROR-MSG": {
+    "LK-UW-ERROR-MSG": ""
+   }
+  }
+ },
+ {
+  "id": "high-risk-avocation",
+  "description": "High-risk avocation forces table rating and manual underwriting",
+  "inputs": {
+   "WS-POLICY-MASTER-REC": {
+    "PM-PROCESS-DATE": "20240324",
+    "PM-POLICY-ID": "POLTEST00012",
+    "PM-INSURED-NAME": "SAMPLE INSURED",
+    "PM-PLAN-CODE": "T1001",
+    "PM-INSURED-AGE-ISSUE": "28",
+    "PM-INSURED-GENDER": "F",
+    "PM-SMOKER-IND": "N",
+    "PM-OCCUPATION-CLASS": "1",
+    "PM-BILLING-MODE": "A",
+    "PM-HIGH-RISK-AVOC-IND": "Y",
+    "PM-FLAT-EXTRA-RATE": "0",
+    "PM-RIDER-COUNT": "0",
+    "PM-SUM-ASSURED": "20000000000.00"
+   },
+   "LK-UW-RESULT-CODE": {
+    "LK-UW-RESULT-CODE": "0"
+   },
+   "LK-UW-ERROR-MSG": {
+    "LK-UW-ERROR-MSG": ""
+   }
+  }
+ }
+]
