@@ -340,7 +340,21 @@ def pool() -> ThreadPoolExecutor:
     return _pool
 
 
-def build_cases(pp: ProjectParse, entry: str, fixtures: list[dict], max_cases: int) -> list[TestCase]:
+def fixture_coverage(project_dir: Path, entry: str, fixtures: list[TestCase]) -> dict[str, set[str]]:
+    """Run fixture cases through the generated Python (our own deterministic code)
+    and return the COBOL statement keys each fixture executes."""
+    from .verify.engine import coverage_map, run_python
+
+    trace = json.loads((project_dir / "traceability.json").read_text())
+    cmap = coverage_map(trace)
+    out: dict[str, set[str]] = {}
+    for r in run_python(project_dir, entry, "harness", fixtures, trace=True):
+        fid = r["id"].removeprefix("fixture-")
+        out[fid] = {cmap[(f, n)] for f, n in r.get("lines", []) if (f, n) in cmap}
+    return out
+
+
+def build_cases(pp: ProjectParse, entry: str, fixtures: list[dict], max_cases: int, project_dir: Path | None = None) -> list[TestCase]:
     prog = pp.program(entry).program
     if not prog.using:
         cases = [TestCase(id=f"fixture-{f['id']}", kind="fixture", description=f.get("description", ""), stdin=f.get("stdin", "")) for f in fixtures]
@@ -350,7 +364,12 @@ def build_cases(pp: ProjectParse, entry: str, fixtures: list[dict], max_cases: i
     index = prog.item_index()
     total, _ = program_access(prog)
     codecs = {u: RecordCodec(index[u]) for u in prog.using}
-    return generate_cases(prog, total.reads, codecs, [f for f in fixtures if "inputs" in f], max_cases=max_cases)
+    linkage_fixtures = [f for f in fixtures if "inputs" in f]
+    coverage = None
+    if project_dir is not None and linkage_fixtures:
+        base_cases = generate_cases(prog, total.reads, codecs, linkage_fixtures, max_cases=len(linkage_fixtures), n_random=0)
+        coverage = fixture_coverage(project_dir, entry, [c for c in base_cases if c.kind == "fixture"])
+    return generate_cases(prog, total.reads, codecs, linkage_fixtures, max_cases=max_cases, fixture_coverage=coverage)
 
 
 def start_verification(gid: str, with_mutation: bool) -> VerificationRun:
@@ -395,7 +414,7 @@ def run_verification(rid: str) -> None:
     p = get_project(g.project_id)
     pp = project_parse(p)
     fixtures = _fixtures_for(p.id, g.entry)
-    cases = build_cases(pp, g.entry, fixtures, s.max_cases)
+    cases = build_cases(pp, g.entry, fixtures, s.max_cases, project_dir=generation_dir(s, gid))
     _progress(rid, f"prepared {len(cases)} test cases")
     mutation = None
     if g.mutation_id:

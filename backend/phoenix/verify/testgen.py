@@ -53,7 +53,9 @@ class CandidateCollector:
         self.prog = prog
         self.index = prog.item_index()
         self.inputs = inputs
-        self.values: dict[str, list[tuple[object, str]]] = {}  # item id -> [(value, why)]
+        self.values: dict[str, list[tuple[object, str, str | None]]] = {}  # item id -> [(value, why, statement key)]
+        self.current_key: str | None = None
+        self.reader_keys: dict[str, set[str]] = {}  # item id -> statements that read it
         self.moved_literals: dict[str, list[ir.Literal]] = {}
         for par in prog.paragraphs:
             for s in ir.walk_statements(par.statements):
@@ -77,8 +79,8 @@ class CandidateCollector:
         else:
             value = str(value)[: it.size]
         lst = self.values.setdefault(iid, [])
-        if all(str(x) != str(value) for x, _ in lst):
-            lst.append((value, why))
+        if all(not (str(x) == str(value) and k == self.current_key) for x, _w, k in lst):
+            lst.append((value, why, self.current_key))
 
     def numeric_around(self, iid: str, lit: Decimal, why: str) -> None:
         it = self.index.get(iid)
@@ -104,7 +106,7 @@ class CandidateCollector:
                             self.add(a.item, "X", f"not SPACES ({where})")
                         elif b.kind == "figurative" and b.value == "ZERO" and it.is_numeric:
                             self.numeric_around(a.item, Decimal(0), f"ZERO ({where})")
-                    elif isinstance(b, ir.Ref) and b.item and b.item not in self.inputs and it.is_numeric:
+                    elif isinstance(b, ir.Ref) and b.item and self.moved_literals.get(b.item) and it.is_numeric:
                         for lit in self.moved_literals.get(b.item, []):
                             self.numeric_around(a.item, lit.decimal, f"{b.name}={lit.value} ({where})")
         elif isinstance(c, ir.CondRef) and c.ref.cond:
@@ -131,9 +133,14 @@ class CandidateCollector:
             self.visit_cond(c.right, where)
 
     def collect(self) -> None:
+        from ..analysis.dataflow import stmt_access
+
         for par in self.prog.paragraphs:
             for s in ir.walk_statements(par.statements):
                 where = f"{s.loc.file}:{s.loc.line}"
+                self.current_key = where
+                for iid in stmt_access(s).reads:
+                    self.reader_keys.setdefault(iid, set()).add(where)
                 if isinstance(s, ir.If):
                     self.visit_cond(s.cond, where)
                 elif isinstance(s, ir.Perform):
@@ -162,6 +169,7 @@ class CandidateCollector:
                             for o in line:
                                 if o.cond is not None:
                                     self.visit_cond(o.cond, where)
+        self.current_key = None
         for iid in sorted(self.inputs):
             it = self.index.get(iid)
             if it is None or it.children:
@@ -192,8 +200,15 @@ def generate_cases(
     seed: int = 20261031,
     max_cases: int = 220,
     n_random: int = 40,
+    fixture_coverage: dict[str, set[str]] | None = None,
 ) -> list[TestCase]:
-    """Build linkage-mode cases. ``codecs`` maps USING root id -> codec."""
+    """Build linkage-mode cases. ``codecs`` maps USING root id -> codec.
+
+    ``fixture_coverage`` (fixture id -> COBOL statement keys executed by that
+    fixture in the generated Python) enables *coverage-guided placement*: each
+    boundary value is applied to a fixture that actually executes the statement
+    the boundary was derived from, instead of always the first fixture.
+    """
     index = prog.item_index()
     root_of = {iid: index[iid].record for iid in input_ids if iid in index}
     root_name = {rid: index[rid].name for rid in codecs}
@@ -221,18 +236,35 @@ def generate_cases(
     for fx in fixtures:
         push(TestCase(id=f"fixture-{fx['id']}", kind="fixture", description=fx.get("description", ""), inputs=_copy(fx.get("inputs", {}))))
     base = baselines[0]
+    cov = fixture_coverage or {}
+
+    def baseline_for(iid: str, key: str | None) -> dict:
+        wanted = {key} if key else col.reader_keys.get(iid, set())
+        for fx in fixtures:
+            if cov.get(fx["id"], set()) & wanted:
+                return fx
+        return base
+
     n = 0
     for iid in sorted(col.values):
         it = index[iid]
         rname = root_name.get(root_of.get(iid, ""), None)
         if rname is None:
             continue
-        for value, why in col.values[iid]:
-            inputs = _copy(base.get("inputs", {}))
-            inputs.setdefault(rname, {})[field_key(it)] = value
+        for value, why, key in col.values[iid]:
+            b = baseline_for(iid, key)
+            inputs = _copy(b.get("inputs", {}))
+            if it.dims:
+                # table element: apply to every occurrence so the value reaches
+                # whichever occurrence the fixture actually uses
+                for occ in range(1, it.dims[0][1] + 1):
+                    inputs.setdefault(rname, {})[field_key(it, occ)] = value
+            else:
+                inputs.setdefault(rname, {})[field_key(it)] = value
             n += 1
             kind = "edge" if why.startswith("edge") else "boundary"
-            push(TestCase(id=f"{kind}-{n:03d}", kind=kind, description=f"{it.name} = {value!s:.40} — {why}", inputs=inputs))
+            on = f" [on fixture {b['id']}]" if b is not base else ""
+            push(TestCase(id=f"{kind}-{n:03d}", kind=kind, description=f"{it.name} = {value!s:.40} — {why}{on}", inputs=inputs))
     rng = random.Random(seed)
     keys = sorted(col.values)
     for k in range(n_random):
@@ -246,7 +278,7 @@ def generate_cases(
             rname = root_name.get(root_of.get(iid, ""), None)
             if rname is None:
                 continue
-            value, _ = rng.choice(col.values[iid])
+            value, _, _ = rng.choice(col.values[iid])
             occ = rng.randint(1, it.dims[0][1]) if it.dims else None
             inputs.setdefault(rname, {})[field_key(it, occ)] = value
             picked.append(f"{field_key(it, occ)}={value!s:.20}")
