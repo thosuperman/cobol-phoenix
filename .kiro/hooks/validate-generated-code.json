@@ -1,0 +1,13 @@
+{
+  "version": "v1",
+  "hooks": [
+    {
+      "name": "Validate generated Python after generator or runtime changes",
+      "description": "Regenerates the sample project and runs its own generated test suite plus ruff to make sure generated code stays executable and lint-clean.",
+      "trigger": "PostFileSave",
+      "matcher": "^backend/phoenix/(codegen|cobol)/.*\\.py$",
+      "action": { "type": "command", "command": "make validate-generated" },
+      "timeout": 600
+    }
+  ]
+}

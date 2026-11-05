@@ -1,0 +1,20 @@
+{
+  "version": "v1",
+  "hooks": [
+    {
+      "name": "Run backend tests after Python edits",
+      "description": "Runs the fast backend unit test suite whenever the agent saves a backend Python file.",
+      "trigger": "PostFileSave",
+      "matcher": "^backend/.*\\.py$",
+      "action": { "type": "command", "command": "make test-backend-fast" },
+      "timeout": 300
+    },
+    {
+      "name": "Full test suite when a spec task completes",
+      "description": "Runs the complete test suite after the agent finishes executing a spec task.",
+      "trigger": "PostTaskExec",
+      "action": { "type": "command", "command": "make test" },
+      "timeout": 900
+    }
+  ]
+}

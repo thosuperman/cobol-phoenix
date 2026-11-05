@@ -1,0 +1,284 @@
+{
+  "RATEENG": [
+    {
+      "id": "standard-ca-full",
+      "description": "Experienced CA sedan driver, full coverage, multi-policy discount",
+      "inputs": {
+        "POLICY-REC": {
+          "PR-POLICY-ID": "PM00000001",
+          "PR-STATE": "CA",
+          "PR-DRIVER-AGE": "42",
+          "PR-YEARS-LICENSED": "20",
+          "PR-VEHICLE-CLASS": "S",
+          "PR-VEHICLE-VALUE": "28500.00",
+          "PR-COVERAGE": "F",
+          "PR-DEDUCTIBLE": "500",
+          "PR-CLAIMS-3YR": "0",
+          "PR-VIOLATIONS-3YR": "0",
+          "PR-MULTI-POLICY": "Y",
+          "PR-ANNUAL-MILEAGE": "12000",
+          "PR-PAY-PLAN": "A"
+        }
+      }
+    },
+    {
+      "id": "young-sports-monthly",
+      "description": "19-year-old sports car, full coverage, monthly plan",
+      "inputs": {
+        "POLICY-REC": {
+          "PR-POLICY-ID": "PM00000002",
+          "PR-STATE": "NY",
+          "PR-DRIVER-AGE": "19",
+          "PR-YEARS-LICENSED": "1",
+          "PR-VEHICLE-CLASS": "P",
+          "PR-VEHICLE-VALUE": "45000.00",
+          "PR-COVERAGE": "F",
+          "PR-DEDUCTIBLE": "250",
+          "PR-CLAIMS-3YR": "1",
+          "PR-VIOLATIONS-3YR": "1",
+          "PR-MULTI-POLICY": "N",
+          "PR-ANNUAL-MILEAGE": "15000",
+          "PR-PAY-PLAN": "M"
+        }
+      }
+    },
+    {
+      "id": "senior-truck-liability",
+      "description": "Senior truck driver, liability only, low mileage",
+      "inputs": {
+        "POLICY-REC": {
+          "PR-POLICY-ID": "PM00000003",
+          "PR-STATE": "TX",
+          "PR-DRIVER-AGE": "67",
+          "PR-YEARS-LICENSED": "45",
+          "PR-VEHICLE-CLASS": "T",
+          "PR-VEHICLE-VALUE": "18000.00",
+          "PR-COVERAGE": "L",
+          "PR-DEDUCTIBLE": "0",
+          "PR-CLAIMS-3YR": "0",
+          "PR-VIOLATIONS-3YR": "0",
+          "PR-MULTI-POLICY": "Y",
+          "PR-ANNUAL-MILEAGE": "5000",
+          "PR-PAY-PLAN": "A"
+        }
+      }
+    },
+    {
+      "id": "suv-surcharge-high-mileage",
+      "description": "SUV with claims, violations and high mileage",
+      "inputs": {
+        "POLICY-REC": {
+          "PR-POLICY-ID": "PM00000004",
+          "PR-STATE": "FL",
+          "PR-DRIVER-AGE": "33",
+          "PR-YEARS-LICENSED": "12",
+          "PR-VEHICLE-CLASS": "U",
+          "PR-VEHICLE-VALUE": "39999.99",
+          "PR-COVERAGE": "S",
+          "PR-DEDUCTIBLE": "1000",
+          "PR-CLAIMS-3YR": "2",
+          "PR-VIOLATIONS-3YR": "3",
+          "PR-MULTI-POLICY": "N",
+          "PR-ANNUAL-MILEAGE": "25000",
+          "PR-PAY-PLAN": "M"
+        }
+      }
+    },
+    {
+      "id": "declined-risk-points",
+      "description": "Five claims in three years: declined",
+      "inputs": {
+        "POLICY-REC": {
+          "PR-POLICY-ID": "PM00000005",
+          "PR-STATE": "WA",
+          "PR-DRIVER-AGE": "25",
+          "PR-YEARS-LICENSED": "7",
+          "PR-VEHICLE-CLASS": "S",
+          "PR-VEHICLE-VALUE": "15000.00",
+          "PR-COVERAGE": "S",
+          "PR-DEDUCTIBLE": "249",
+          "PR-CLAIMS-3YR": "5",
+          "PR-VIOLATIONS-3YR": "0",
+          "PR-MULTI-POLICY": "N",
+          "PR-ANNUAL-MILEAGE": "10000",
+          "PR-PAY-PLAN": "A"
+        }
+      }
+    },
+    {
+      "id": "state-not-served",
+      "description": "State without a rate table entry",
+      "inputs": {
+        "POLICY-REC": {
+          "PR-POLICY-ID": "PM00000006",
+          "PR-STATE": "ZZ",
+          "PR-DRIVER-AGE": "40",
+          "PR-YEARS-LICENSED": "20",
+          "PR-VEHICLE-CLASS": "S",
+          "PR-VEHICLE-VALUE": "20000.00",
+          "PR-COVERAGE": "S",
+          "PR-DEDUCTIBLE": "500",
+          "PR-CLAIMS-3YR": "0",
+          "PR-VIOLATIONS-3YR": "0",
+          "PR-MULTI-POLICY": "N",
+          "PR-ANNUAL-MILEAGE": "10000",
+          "PR-PAY-PLAN": "A"
+        }
+      }
+    },
+    {
+      "id": "age-out-of-range",
+      "description": "15-year-old driver",
+      "inputs": {
+        "POLICY-REC": {
+          "PR-POLICY-ID": "PM00000007",
+          "PR-STATE": "OH",
+          "PR-DRIVER-AGE": "15",
+          "PR-YEARS-LICENSED": "0",
+          "PR-VEHICLE-CLASS": "S",
+          "PR-VEHICLE-VALUE": "8000.00",
+          "PR-COVERAGE": "L",
+          "PR-DEDUCTIBLE": "0",
+          "PR-CLAIMS-3YR": "0",
+          "PR-VIOLATIONS-3YR": "0",
+          "PR-MULTI-POLICY": "N",
+          "PR-ANNUAL-MILEAGE": "5000",
+          "PR-PAY-PLAN": "A"
+        }
+      }
+    },
+    {
+      "id": "years-licensed-inconsistent",
+      "description": "Licensed longer than possible for the age",
+      "inputs": {
+        "POLICY-REC": {
+          "PR-POLICY-ID": "PM00000008",
+          "PR-STATE": "IL",
+          "PR-DRIVER-AGE": "30",
+          "PR-YEARS-LICENSED": "20",
+          "PR-VEHICLE-CLASS": "S",
+          "PR-VEHICLE-VALUE": "21000.00",
+          "PR-COVERAGE": "S",
+          "PR-DEDUCTIBLE": "500",
+          "PR-CLAIMS-3YR": "0",
+          "PR-VIOLATIONS-3YR": "0",
+          "PR-MULTI-POLICY": "N",
+          "PR-ANNUAL-MILEAGE": "9000",
+          "PR-PAY-PLAN": "A"
+        }
+      }
+    },
+    {
+      "id": "unknown-vehicle-class",
+      "description": "Vehicle class X is not rated",
+      "inputs": {
+        "POLICY-REC": {
+          "PR-POLICY-ID": "PM00000009",
+          "PR-STATE": "AZ",
+          "PR-DRIVER-AGE": "55",
+          "PR-YEARS-LICENSED": "30",
+          "PR-VEHICLE-CLASS": "X",
+          "PR-VEHICLE-VALUE": "30000.00",
+          "PR-COVERAGE": "S",
+          "PR-DEDUCTIBLE": "500",
+          "PR-CLAIMS-3YR": "0",
+          "PR-VIOLATIONS-3YR": "0",
+          "PR-MULTI-POLICY": "N",
+          "PR-ANNUAL-MILEAGE": "9000",
+          "PR-PAY-PLAN": "A"
+        }
+      }
+    },
+    {
+      "id": "missing-policy-id",
+      "description": "Blank policy identifier",
+      "inputs": {
+        "POLICY-REC": {
+          "PR-POLICY-ID": "",
+          "PR-STATE": "CA",
+          "PR-DRIVER-AGE": "40",
+          "PR-YEARS-LICENSED": "20",
+          "PR-VEHICLE-CLASS": "S",
+          "PR-VEHICLE-VALUE": "20000.00",
+          "PR-COVERAGE": "S",
+          "PR-DEDUCTIBLE": "500",
+          "PR-CLAIMS-3YR": "0",
+          "PR-VIOLATIONS-3YR": "0",
+          "PR-MULTI-POLICY": "N",
+          "PR-ANNUAL-MILEAGE": "10000",
+          "PR-PAY-PLAN": "A"
+        }
+      }
+    },
+    {
+      "id": "minimum-premium",
+      "description": "Cheap liability risk hits the 450.00 minimum premium",
+      "inputs": {
+        "POLICY-REC": {
+          "PR-POLICY-ID": "PM00000012",
+          "PR-STATE": "OH",
+          "PR-DRIVER-AGE": "45",
+          "PR-YEARS-LICENSED": "25",
+          "PR-VEHICLE-CLASS": "S",
+          "PR-VEHICLE-VALUE": "1000.00",
+          "PR-COVERAGE": "L",
+          "PR-DEDUCTIBLE": "0",
+          "PR-CLAIMS-3YR": "0",
+          "PR-VIOLATIONS-3YR": "0",
+          "PR-MULTI-POLICY": "Y",
+          "PR-ANNUAL-MILEAGE": "3000",
+          "PR-PAY-PLAN": "A"
+        }
+      }
+    },
+    {
+      "id": "max-vehicle-value",
+      "description": "Maximum vehicle value, 18-year-old, sports, full",
+      "inputs": {
+        "POLICY-REC": {
+          "PR-POLICY-ID": "PM00000013",
+          "PR-STATE": "CA",
+          "PR-DRIVER-AGE": "18",
+          "PR-YEARS-LICENSED": "2",
+          "PR-VEHICLE-CLASS": "P",
+          "PR-VEHICLE-VALUE": "9999999.99",
+          "PR-COVERAGE": "F",
+          "PR-DEDUCTIBLE": "0",
+          "PR-CLAIMS-3YR": "0",
+          "PR-VIOLATIONS-3YR": "0",
+          "PR-MULTI-POLICY": "N",
+          "PR-ANNUAL-MILEAGE": "30000",
+          "PR-PAY-PLAN": "M"
+        }
+      }
+    },
+    {
+      "id": "non-numeric-age",
+      "description": "Driver age contains a letter (raw bytes '4A0')",
+      "inputs": {
+        "POLICY-REC": {
+          "PR-POLICY-ID": "PM00000011",
+          "PR-STATE": "CA",
+          "PR-DRIVER-AGE": "raw:4A0",
+          "PR-YEARS-LICENSED": "20",
+          "PR-VEHICLE-CLASS": "S",
+          "PR-VEHICLE-VALUE": "28500.00",
+          "PR-COVERAGE": "F",
+          "PR-DEDUCTIBLE": "500",
+          "PR-CLAIMS-3YR": "0",
+          "PR-VIOLATIONS-3YR": "0",
+          "PR-MULTI-POLICY": "Y",
+          "PR-ANNUAL-MILEAGE": "12000",
+          "PR-PAY-PLAN": "A"
+        }
+      }
+    }
+  ],
+  "PREMCALC": [
+    {
+      "id": "nightly-batch",
+      "description": "fixtures/policies.txt (13 policies + END)",
+      "stdin": "PM00000001CA04220S002850000F005000000Y012000A\nPM00000002NY01901P004500000F002500101N015000M\nPM00000003TX06745T001800000L000000000Y005000A\nPM00000004FL03312U003999999S010000203N025000M\nPM00000005WA02507S001500000S002490500N010000A\nPM00000006ZZ04020S002000000S005000000N010000A\nPM00000007OH01500S000800000L000000000N005000A\nPM00000008IL03020S002100000S005000000N009000A\nPM00000009AZ05530X003000000S005000000N009000A\n          CA04020S002000000S005000000N010000A\nPM00000011CA4A020S002000000S005000000N010000A\nPM00000012OH04525S000100000L000000000Y003000A\nPM00000013CA01802P999999999F000000000N030000M\nEND\n"
+    }
+  ]
+}

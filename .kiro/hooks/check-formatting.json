@@ -1,0 +1,19 @@
+{
+  "version": "v1",
+  "hooks": [
+    {
+      "name": "Format and lint Python on save",
+      "trigger": "PostFileSave",
+      "matcher": "\\.py$",
+      "action": { "type": "command", "command": "make fmt-py" },
+      "timeout": 120
+    },
+    {
+      "name": "Type-check frontend on save",
+      "trigger": "PostFileSave",
+      "matcher": "^frontend/src/.*\\.(ts|tsx)$",
+      "action": { "type": "command", "command": "make lint-frontend" },
+      "timeout": 300
+    }
+  ]
+}

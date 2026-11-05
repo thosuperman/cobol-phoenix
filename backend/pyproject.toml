@@ -1,0 +1,55 @@
+[project]
+name = "cobol-phoenix"
+version = "1.0.0"
+description = "Evidence-backed COBOL to Python modernization engine and API"
+readme = "../README.md"
+license = { text = "Apache-2.0" }
+requires-python = ">=3.13"
+dependencies = [
+    "fastapi==0.115.12",
+    "uvicorn[standard]==0.34.2",
+    "pydantic==2.11.4",
+    "pydantic-settings==2.9.1",
+    "sqlalchemy==2.0.40",
+    "alembic==1.15.2",
+    "python-multipart==0.0.20",
+    "httpx==0.28.1",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest==8.3.5",
+    "hypothesis==6.131.15",
+    "ruff==0.11.9",
+    "bandit==1.8.3",
+]
+
+[build-system]
+requires = ["setuptools>=75"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+include = ["phoenix*"]
+
+[tool.setuptools.package-data]
+"phoenix" = ["codegen/*.py", "samples/**/*", "verify/templates/*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+markers = [
+    "cobol: requires a GnuCOBOL executor (docker or queue)",
+    "corpus: requires the external corpus fetched by scripts/fetch-corpus.sh",
+]
+addopts = "-q"
+
+[tool.ruff]
+line-length = 160
+target-version = "py313"
+extend-exclude = ["phoenix/samples"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP", "S"]
+ignore = ["S101", "S603", "S607", "S311", "E501", "B904", "S108"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["S", "B"]

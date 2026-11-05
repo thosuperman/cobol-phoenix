@@ -1,0 +1,40 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+.hypothesis/
+.coverage
+htmlcov/
+
+# Runtime data (projects, generated code, sqlite db, job queue)
+backend/data/
+data/
+*.db
+*.db-wal
+*.db-shm
+
+# Node / Next.js
+node_modules/
+frontend/.next/
+frontend/out/
+frontend/playwright-report/
+frontend/test-results/
+*.tsbuildinfo
+next-env.d.ts
+
+# Environment / secrets
+.env
+.env.*
+!.env.example
+
+# External test corpus (fetched by scripts/fetch-corpus.sh, never committed)
+corpus/repos/
+
+# OS / editor
+.DS_Store
+.idea/
+.vscode/
+*.swp

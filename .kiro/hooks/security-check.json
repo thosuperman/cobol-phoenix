@@ -1,0 +1,19 @@
+{
+  "version": "v1",
+  "hooks": [
+    {
+      "name": "Security checks before the agent stops",
+      "description": "Runs bandit on the backend and scans the tree for committed secrets.",
+      "trigger": "Stop",
+      "action": { "type": "command", "command": "make security" },
+      "timeout": 300
+    },
+    {
+      "name": "Review upload and sandbox changes",
+      "description": "Asks the agent to re-check the security steering rules whenever import or executor code changes.",
+      "trigger": "PostFileSave",
+      "matcher": "^backend/phoenix/(api/importer|verify/executors)\\.py$",
+      "action": { "type": "agent", "prompt": "You just changed security-sensitive code (archive import or sandbox executors). Re-read .kiro/steering/security.md and confirm: path traversal, symlinks, size/ratio limits, allow-listed extensions, no network and resource limits for execution. Add or update tests in backend/tests/test_security.py for any changed behaviour." }
+    }
+  ]
+}
