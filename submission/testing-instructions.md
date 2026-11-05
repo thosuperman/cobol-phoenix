@@ -2,7 +2,7 @@
 
 ## Fastest path (Docker only)
 ```bash
-git clone <repository URL> cobol-phoenix && cd cobol-phoenix
+git clone https://github.com/thosuperman/cobol-phoenix cobol-phoenix && cd cobol-phoenix
 docker compose up --build
 ```
 Open http://localhost:3000 → **Import sample** → tabs **Business rules** → **Generate** (*Generate RATEENG*) →

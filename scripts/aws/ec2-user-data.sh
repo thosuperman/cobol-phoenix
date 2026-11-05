@@ -2,7 +2,7 @@
 # EC2 user data for a single-host COBOL Phoenix deployment (Amazon Linux 2023).
 # Edit REPO_URL (and optionally DOMAIN) before use. Not executed by the project authors.
 set -euxo pipefail
-REPO_URL="https://github.com/<owner>/cobol-phoenix.git"
+REPO_URL="https://github.com/thosuperman/cobol-phoenix.git"
 DOMAIN=""   # e.g. phoenix.example.com for automatic TLS via Caddy
 
 dnf install -y docker git

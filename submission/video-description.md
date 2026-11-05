@@ -14,5 +14,5 @@ In this demo:
 2:20 An independent public insurance repository (180/180)
 2:40 Reports
 
-Source code (Apache-2.0): <repository URL>
+Source code (Apache-2.0): https://github.com/thosuperman/cobol-phoenix
 Built with Kiro, Python, FastAPI, GnuCOBOL, Next.js.
