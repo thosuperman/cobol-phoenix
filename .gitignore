@@ -41,3 +41,7 @@ corpus/repos/
 
 # Local tool configuration
 .claude/
+
+# Demo video build intermediates
+submission/video/raw-recording.webm
+submission/video/audio/

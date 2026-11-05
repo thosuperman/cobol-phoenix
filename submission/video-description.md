@@ -6,13 +6,13 @@ COBOL Phoenix turns COBOL business logic into Python/FastAPI services and proves
 
 In this demo:
 0:00 The problem
-0:15 Import an insurance COBOL system
-0:35 Dependency graph and evidence-backed business rules
-0:55 Generate a FastAPI service with traceability
-1:20 Differential verification against GnuCOBOL (127/127)
-1:55 Injecting a fault — and catching it
-2:20 An independent public insurance repository (180/180)
-2:40 Reports
+0:10 Import an insurance COBOL system
+0:25 Dependency graph and evidence-backed business rules
+0:36 Generate a FastAPI service with traceability
+0:48 Differential verification against GnuCOBOL (127/127)
+1:14 Injecting a fault — and catching it
+1:25 An independent public insurance repository (180/180)
+1:41 Reports
 
 Source code (Apache-2.0): https://github.com/thosuperman/cobol-phoenix
 Built with Kiro, Python, FastAPI, GnuCOBOL, Next.js.

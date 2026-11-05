@@ -73,7 +73,7 @@ Details: [docs/architecture.md](docs/architecture.md).
 
 ## 6. Demo video
 
-_Placeholder — link to the public YouTube demo (under 3 minutes) goes here. Script: [submission/demo-script.md](submission/demo-script.md)._
+Video file: [submission/video/cobol-phoenix-demo.mp4](submission/video/cobol-phoenix-demo.mp4) (1:58, recorded from the running app). YouTube link: _to be added after upload_. Script: [submission/demo-script.md](submission/demo-script.md).
 
 ## 7. Quick start (local development)
 

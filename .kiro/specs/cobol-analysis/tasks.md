@@ -8,3 +8,6 @@
 - [x] 6. IR serialisation and project-level analysis (_Req 10_)
 - [x] 7. Business rule extraction with evidence (_Req 11_)
 - [x] 8. Parser tests on the bundled sample and the external corpus
+
+## Next (open)
+- [ ] 9. Support `INSPECT <field> TALLYING <counter> FOR ALL <literal>` and `INSPECT … REPLACING ALL <literal> BY <literal>`: parse into IR, translate in `program_gen.py`, add runtime helpers, unit tests and a GnuCOBOL differential test (sample `AUDITLOG` uses TALLYING). Update `docs/cobol-support.md`. (_Req 8, 9_)

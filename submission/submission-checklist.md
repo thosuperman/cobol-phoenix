@@ -14,10 +14,11 @@
 - [x] No secrets committed (`make security`)
 - [x] No deployment claims (cloud deployment not performed)
 
-## Manual steps before submitting (author)
+## Manual steps before submitting (author) — see MANUAL-STEPS.md
 - [ ] Use Kiro IDE on this repository as described in `docs/kiro-dev-log.md` and complete `kiro-usage.md`
 - [ ] Create the public GitHub repository and push (with `.kiro/`)
-- [ ] Record and upload the demo video (< 3 min, public YouTube); add link to README and Devpost
+- [x] Demo video recorded from the running app: `submission/video/cobol-phoenix-demo.mp4` (1:58) + `.srt`
+- [ ] Upload it to YouTube (public) and add the link to README and Devpost
 - [ ] Optional: deploy (see `docs/deployment.md`) and add the URL
 - [ ] Fill the Devpost form from `devpost-description.md`; add screenshots
 - [ ] Review and publish `blog-post.md` / `social-post.md` yourself (bonus prizes); verify the official Kiro handle

@@ -1,0 +1,59 @@
+1
+00:00:00,709 --> 00:00:05,448
+Billions in insurance and banking still run on COBOL. Rewriting it is easy. Proving
+
+2
+00:00:05,448 --> 00:00:10,187
+the rewrite behaves exactly the same is the hard part. This is COBOL Phoenix.
+
+3
+00:00:11,170 --> 00:00:18,265
+We import an insurance rating system. It is parsed deterministically, with no AI guessing: three programs, three
+
+4
+00:00:18,265 --> 00:00:25,360
+copybooks, twenty seven business rules, and four constructs we do not support, each reported with its exact line.
+
+5
+00:00:26,261 --> 00:00:31,217
+Every dependency points to real source. Here is the base premium rule: its
+
+6
+00:00:31,217 --> 00:00:36,173
+inputs, its outputs, and the compute rounded statement, cited to the original lines.
+
+7
+00:00:37,074 --> 00:00:42,398
+One click generates a FastAPI service, with decimal arithmetic and schemas derived from the
+
+8
+00:00:42,398 --> 00:00:47,722
+COBOL picture clauses. Every Python statement maps back to the COBOL line it came from.
+
+9
+00:00:48,625 --> 00:00:59,809
+Now the proof. The original program runs in a sandboxed GnuCOBOL container with no network, and the generated Python runs beside it. Fixtures, boundary values derived from the code,
+
+10
+00:00:59,809 --> 00:01:10,992
+edge cases and random records. One hundred twenty seven of one hundred twenty seven cases are identical, and mutation analysis shows the tests catch every fault that changes behaviour.
+
+11
+00:01:14,623 --> 00:01:19,955
+Does the verifier actually catch mistakes? We inject one tiny fault: a missing rounded.
+
+12
+00:01:19,955 --> 00:01:25,287
+Eight cases fail, down to the cent, with the exact field and its copybook line.
+
+13
+00:01:26,187 --> 00:01:33,465
+And it is not just our sample. On an independent public insurance repository, the generated underwriting service matches GnuCOBOL
+
+14
+00:01:33,465 --> 00:01:40,742
+on one hundred eighty of one hundred eighty cases. Mutation analysis even exposed a business rule that can never fire.
+
+15
+00:01:41,645 --> 00:01:47,888
+Evidence for every rule. Proof for every build. COBOL Phoenix. Preserve the logic, rebuild the future.
