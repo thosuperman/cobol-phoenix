@@ -38,3 +38,6 @@ corpus/repos/
 .idea/
 .vscode/
 *.swp
+
+# Local tool configuration
+.claude/
