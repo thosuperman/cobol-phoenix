@@ -19,7 +19,7 @@ Kiro is installed (`/Applications/Kiro.app`, v1.2.56).
    `docs/kiro-dev-log.md` with what actually happened. Commit and push.
 
 ## 2. Upload the demo video
-- File: `submission/video/cobol-phoenix-demo.mp4` (1:58, 1440×900, narrated with macOS text-to-speech, recorded from
+- File: `submission/video/cobol-phoenix-demo.mp4` (2:10, 1440×900, narrated with macOS text-to-speech (voice Daniel, 150 wpm; `python3 scripts/make_narration.py`), recorded from
   the real running app by `frontend/e2e/record-demo.spec.ts`; rebuild with `python3 scripts/build_demo_video.py`).
 - YouTube → Create → Upload. Title: *COBOL Phoenix — From Mainframe to Modern (Kiroween 2026)*.
   Description: `submission/video-description.md` (timestamps match the video roughly; adjust if needed).
