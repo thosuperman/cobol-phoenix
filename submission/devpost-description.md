@@ -15,7 +15,7 @@ COBOL Phoenix is a modernization workspace in four acts:
 4. **The proof — verify.** The original program runs in a network-less GnuCOBOL container and the generated Python in a subprocess, on the same inputs: fixtures, boundary values derived from the IR, edge values and seeded random records. Outputs are compared field by field. Mutation analysis measures how strong the test suite is, and you can inject a fault on purpose to watch the verifier catch it.
 
 ## Real results (all from actual executions, GnuCOBOL 3.2.0)
-- **Original sample (Phoenix Mutual auto rating):** `RATEENG` — 127/127 cases identical, 95.0% statement coverage, 30/36 injected single faults killed — the survivors are listed (4 equivalent, 2 untested boundaries). Injecting “drop ROUNDED on RR-BASE-PREMIUM” makes 8 cases FAIL, e.g. 4862.05 vs 4862.04. The batch `PREMCALC` reproduces the GnuCOBOL report byte-for-byte — including a legacy truncation quirk (`$39,618.74` for 139,618.74).
+- **Original sample (Phoenix Mutual auto rating):** `RATEENG` — 127/127 cases identical, 95.8% statement coverage, 31/36 injected single faults killed — every survivor is listed and classified (4 equivalent, 1 known gap). Injecting “drop ROUNDED on RR-BASE-PREMIUM” makes 8 cases FAIL, e.g. 4862.05 vs 4862.04. The batch `PREMCALC` reproduces the GnuCOBOL report byte-for-byte — including a legacy truncation quirk (`$39,618.74` for 139,618.74).
 - **External insurance repository** (mudasin1/COBOL_Sample_March_2026): 0 parse errors; the generated Python of all three upstream test drivers reproduces the upstream golden files byte-for-byte; the migration unit `NBUW001` (eligibility, rating, premium) passes **180/180** differential cases with 96.3% statement coverage. Mutation analysis exposed an unreachable rule (NB-303 can never fire because all plans cap issue age at ≤ 60).
 - **Two more independent repositories** (banking demo; legacy ledger in free format): 20 programs, 0 parse errors, 365 unsupported constructs (file I/O, ALTER, REPORT SECTION, SORT, …) reported with locations.
 - Differential testing also found a bug in our own runtime (floating `$` editing when high-order digits are truncated) — exactly the kind of subtle behaviour the product exists to catch.
@@ -30,7 +30,7 @@ COBOL Phoenix is a modernization workspace in four acts:
 ## How we used Kiro
 - **Specs first:** four specs (product, COBOL analysis, Python generation, differential verification) with EARS requirements, designs and requirement-linked task lists, written before any code.
 - **Steering for domain rules:** `cobol-semantics.md` encodes the GnuCOBOL behaviours the runtime must reproduce; `product`, `architecture`, `security` and `testing` are always included.
-- **Spec tasks executed in Kiro IDE:** INSPECT TALLYING/REPLACING support (3 runs) and OpenAPI request examples generated from fixtures (2 runs), each delivered with tests; the suite grew from 86 to 100 tests.
+- **Spec tasks executed in Kiro IDE:** INSPECT TALLYING/REPLACING support (3 runs), OpenAPI request examples generated from fixtures (2 runs) and validity-aware placement of boundary test cases (2 runs, mutation score 30/36 → 31/36), each delivered with tests; the suite grew from 86 to 107 tests.
 - **Hooks as quality gates:** a `PostTaskExec` hook runs the full suite — including real GnuCOBOL differential tests — after every spec task, and a `Stop` hook runs bandit plus a secret scan.
 - Details and what we did not use (CLI, Crew, MCP, custom agents, powers, Kiro PBT): `submission/kiro-usage.md`.
 

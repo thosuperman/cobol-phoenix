@@ -24,8 +24,8 @@
 | Startup / Student / Ghost of Kiroween Past / Kiro Crew bonuses | NOT APPLICABLE | unless you personally qualify |
 
 ## Verified in this session
-- Backend: 100 tests passing, none skipped (GnuCOBOL differential and external-corpus tests ran for real).
+- Backend: 107 tests passing, none skipped (GnuCOBOL differential and external-corpus tests ran for real).
 - Generated projects: both sample services pass their own generated tests and ruff.
 - Frontend: type-check and production build pass; Playwright demo workflow passes; no horizontal overflow at 375 px / 768 px.
 - Docker Compose stack: healthy, verification through the sandbox sidecar, runner has no network.
-- Hosted at https://cobol.beauty: RATEENG 127/127 (mutation 30/36), NBUW001 180/180 (36/43), injected fault caught (8 FAILED).
+- Hosted at https://cobol.beauty: RATEENG 127/127 (mutation 31/36), NBUW001 180/180 (36/43), injected fault caught (8 FAILED).

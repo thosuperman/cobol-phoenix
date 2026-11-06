@@ -50,8 +50,9 @@ Source: `.kiro/specs/*/tasks.meta.json` and Kiro's local session records for thi
 | Steering `product`, `architecture`, `security`, `testing` (always) included in sessions | `steering_inclusion` events |
 | `cobol-analysis` task 9 (INSPECT) executed 3 times across 3 sessions | `tasks.meta.json` |
 | `python-generation` task 7 (OpenAPI examples) executed 2 times across 2 sessions | `tasks.meta.json` |
-| Hook "Full test suite when a spec task completes" (`run-tests.json`, `PostTaskExec`) invoked 2×, status completed | `ContextualHookInvoked` events |
-| Hook "Security checks before the agent stops" (`security-check.json`, `Stop`) invoked 3× | hook events |
-| Result reviewed, full suite re-run (100 tests passing) and committed as `0fcc605` | git history |
+| Hook "Full test suite when a spec task completes" (`run-tests.json`, `PostTaskExec`) invoked 3×, all completed | `ContextualHookInvoked` events |
+| Hook "Security checks before the agent stops" (`security-check.json`, `Stop`) invoked 4×, all completed | hook events |
+| `differential-verification` task 9 (validity-aware placement) executed 2 times | `tasks.meta.json` |
+| Results reviewed, full suite re-run (107 tests passing) and committed | git history |
 
 Not used: Kiro CLI / Web / Crew, custom agents, MCP, Kiro powers, Kiro's property-based testing feature.

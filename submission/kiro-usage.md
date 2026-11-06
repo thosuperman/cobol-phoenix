@@ -18,15 +18,16 @@ How we structured them for Kiro:
 - **Designs pin decisions** Kiro must not reinvent: the IR is generator-independent, storage is byte-based, the complexity formula is fixed, and statuses are VERIFIED / FAILED / NOT_VERIFIABLE / UNSUPPORTED.
 - **Tasks name the files and the proof**: task text lists the modules to touch and the tests (including a GnuCOBOL differential test) that close it.
 
-Spec tasks executed by Kiro (recorded in `.kiro/specs/*/tasks.meta.json`):
+Spec tasks executed by Kiro (recorded in `.kiro/specs/*/tasks.meta.json`; committed in `0fcc605` and the validity-aware placement commit):
 
-| Spec / task | Kiro runs | Result (committed in `0fcc605`) |
+| Spec / task | Kiro runs | Result |
 |---|---|---|
 | `cobol-analysis` 9 — INSPECT TALLYING / REPLACING | 3 | New `Inspect` IR node, parser, data flow, generator, runtime helpers; parser/runtime/codegen tests and a GnuCOBOL differential test. Kiro deliberately refused to translate INSPECT on signed or binary items (GnuCOBOL strips the sign) and reports those as unsupported. On the external ledger corpus, 6 previously unsupported INSPECT statements became translatable. |
 | `python-generation` 7 — OpenAPI request examples from fixtures | 2 | Generated `schemas.py` now carries request examples validated against PICTURE constraints (invalid fixtures are listed in the generated README rather than altered), plus a generated test that posts every example. |
+| `differential-verification` 9 — validity-aware placement of boundary cases | 2 | Each boundary case is traced through the generated Python and re-placed (other fixtures, then guard-field adjustments) when an earlier validation rule would reject it. Sample RATEENG statement coverage 95.0% → 95.8% and mutation score 30/36 → 31/36; Kiro also documented the one remaining gap (state-table loop at line 128) instead of hiding it. |
 
 Compared with prompting freely, the spec forced each change to arrive with its tests and docs: both tasks updated
-`docs/cobol-support.md` / `CHANGELOG.md` and the backend suite grew from 86 to 100 tests, all passing.
+`docs/cobol-support.md` / `CHANGELOG.md` and the backend suite grew from 86 to 107 tests, all passing.
 
 ## Steering
 `.kiro/steering/` holds six documents. `product.md`, `architecture.md`, `security.md` and `testing.md` use
@@ -44,10 +45,10 @@ Four v1 hook files in `.kiro/hooks/` (format checked against the current Kiro ho
 | Hook | Trigger | Action | Observed in Kiro |
 |---|---|---|---|
 | Run backend tests after Python edits | `PostFileSave` on `backend/**.py` | `make test-backend-fast` | — |
-| **Full test suite when a spec task completes** | `PostTaskExec` | `make test` | **invoked 2×, completed** |
+| **Full test suite when a spec task completes** | `PostTaskExec` | `make test` | **invoked 3×, all completed** |
 | Validate generated Python | `PostFileSave` on generator/parser files | `make validate-generated` (regenerates the sample services and runs *their own* generated tests + ruff) | — |
 | Format/lint Python, type-check frontend | `PostFileSave` | `make fmt-py`, `make lint-frontend` | — |
-| **Security checks before the agent stops** | `Stop` | `make security` (bandit + secret scan) | **invoked 3×** |
+| **Security checks before the agent stops** | `Stop` | `make security` (bandit + secret scan) | **invoked 4×, all completed** |
 | Review upload/sandbox changes | `PostFileSave` on importer/executors | agent prompt: re-check `security.md` and update security tests | — |
 
 The hooks make every Kiro task end with the full test suite (which includes real GnuCOBOL differential runs) and a

@@ -2,38 +2,38 @@
   "scenes": [
     {
       "id": "s1",
-      "start": 0.346
+      "start": 0.224
     },
     {
       "id": "s2",
-      "start": 13.233
+      "start": 13.12
     },
     {
       "id": "s3",
-      "start": 32.432
+      "start": 32.319
     },
     {
       "id": "s4",
-      "start": 45.572
+      "start": 45.458
     },
     {
       "id": "s5",
-      "start": 59.305
+      "start": 59.19
     },
     {
       "id": "s6",
-      "start": 88.338
+      "start": 88.223
     },
     {
       "id": "s7",
-      "start": 102.546
+      "start": 102.431
     },
     {
       "id": "s8",
-      "start": 120.902
+      "start": 120.784
     }
   ],
-  "total": 131.918,
+  "total": 131.796,
   "narration": [
     "s1",
     "s2",

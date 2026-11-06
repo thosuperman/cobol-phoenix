@@ -110,7 +110,7 @@ minimum premium, installments). `AUDITLOG` uses file I/O on purpose to show unsu
 1. **Import sample** — 3 programs, 3 copybooks, 27 rules, 3 unsupported constructs (all file I/O in `AUDITLOG`).
 2. **Business rules** — e.g. `PM-404 Base Premium`, cited to `cobol/RATEENG.cbl:197-205`, with its COMPUTE ROUNDED and ON SIZE ERROR.
 3. **Generate** `RATEENG` — typed endpoint `POST /api/v1/rateeng/execute`, 120 COBOL statements traced.
-4. **Verify** — 127/127 cases identical in GnuCOBOL 3.2.0 and Python; 95.0% statement coverage; mutation analysis 30/36 killed (4 survivors are equivalent mutants; 2 expose untested boundaries — driver age 99 and 21).
+4. **Verify** — 127/127 cases identical in GnuCOBOL 3.2.0 and Python; 95.8% statement coverage; mutation analysis 31/36 killed (4 survivors are equivalent mutants; 1 is a known gap in the state-table loop, documented in docs/verification.md).
 5. **Inject a fault** (drop ROUNDED on `RR-BASE-PREMIUM`) — the verifier reports 8 FAILED cases, e.g. `RR-BASE-PREMIUM` 4862.05 (COBOL) vs 4862.04 (Python).
 
 The sample also preserves a real legacy quirk: a `$$$,$$9.99` field silently truncates `139,618.74` to
@@ -161,7 +161,7 @@ Full matrix and semantics: [docs/cobol-support.md](docs/cobol-support.md).
 ## 12. Testing
 
 ```bash
-make test-backend       # 100 pytest tests (parser, runtime + Hypothesis, codegen, API, security, GnuCOBOL differential, corpus)
+make test-backend       # 107 pytest tests (parser, runtime + Hypothesis, codegen, API, security, GnuCOBOL differential, corpus)
 make corpus             # fetch the external corpus at pinned commits (enables corpus tests)
 make test-frontend      # tsc + production build
 make validate-generated # regenerate sample services and run their own generated tests + ruff
