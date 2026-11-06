@@ -11,16 +11,31 @@ Heuristics (documented in docs/verification.md):
    Each value is applied one-factor-at-a-time to every fixture baseline.
 3. **Edge values**: zero / maximum / negative maximum for numeric inputs, SPACES for alphanumeric inputs.
 4. **Seeded random combinations** of the candidate values (``random.Random(seed)``).
+5. **Coverage-guided placement**: each boundary value is applied to a fixture that executes
+   the statement it was derived from.
+6. **Validity-aware placement** (optional ``reaches`` callback): the placed case is traced through
+   the generated Python; if it does not execute its source statement, other fixtures and then
+   guard-field adjustments (collected candidates only) are tried, bounded and deterministic.
 """
 
 from __future__ import annotations
 
 import random
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from decimal import Decimal
 
 from ..cobol import ir
 from .records import RecordCodec
+
+PLACEMENT_MAX_ATTEMPTS = 24  # traced runs per boundary value (already-traced stdins do not count)
+
+Inputs = dict[str, dict[str, object]]
+Reaches = Callable[[Inputs, str], bool]
+
+
+class TraceUnavailable(Exception):  # noqa: N818 - signal, not an error report
+    """Raised by a ``reaches`` callback when the generated Python cannot be traced."""
 
 
 @dataclass
@@ -57,6 +72,8 @@ class CandidateCollector:
         self.current_key: str | None = None
         self.reader_keys: dict[str, set[str]] = {}  # item id -> statements that read it
         self.moved_literals: dict[str, list[ir.Literal]] = {}
+        # conditional statements (IF / EVALUATE / PERFORM UNTIL|VARYING): (file, line, key, input ids read)
+        self.guards: list[tuple[str, int, str, list[str]]] = []
         for par in prog.paragraphs:
             for s in ir.walk_statements(par.statements):
                 if isinstance(s, ir.Move) and isinstance(s.source, ir.Literal) and s.source.kind == "number":
@@ -139,8 +156,11 @@ class CandidateCollector:
             for s in ir.walk_statements(par.statements):
                 where = f"{s.loc.file}:{s.loc.line}"
                 self.current_key = where
-                for iid in stmt_access(s).reads:
+                reads = stmt_access(s).reads
+                for iid in reads:
                     self.reader_keys.setdefault(iid, set()).add(where)
+                if isinstance(s, ir.If | ir.Evaluate) or (isinstance(s, ir.Perform) and (s.until is not None or s.varying)):
+                    self.guards.append((s.loc.file, s.loc.line, where, sorted(reads & self.inputs)))
                 if isinstance(s, ir.If):
                     self.visit_cond(s.cond, where)
                 elif isinstance(s, ir.Perform):
@@ -201,6 +221,7 @@ def generate_cases(
     max_cases: int = 220,
     n_random: int = 40,
     fixture_coverage: dict[str, set[str]] | None = None,
+    reaches: Reaches | None = None,
 ) -> list[TestCase]:
     """Build linkage-mode cases. ``codecs`` maps USING root id -> codec.
 
@@ -208,6 +229,15 @@ def generate_cases(
     fixture in the generated Python) enables *coverage-guided placement*: each
     boundary value is applied to a fixture that actually executes the statement
     the boundary was derived from, instead of always the first fixture.
+
+    ``reaches(inputs, key)`` (validity-aware placement) reports whether a case with
+    ``inputs`` executes the COBOL statement ``key`` in the generated Python. When given,
+    every boundary case is checked and, if it misses its statement, re-placed on other
+    fixtures that execute it, then on the preferred fixture with guard fields adjusted to
+    collected candidate values (one field, then pairs), at most ``PLACEMENT_MAX_ATTEMPTS``
+    new traced inputs per boundary value. An optional ``reaches.prefetch(list[inputs])``
+    lets the callback trace the preferred placements in one batch. ``reaches`` may raise
+    ``TraceUnavailable``; the search is then disabled for the rest of the generation.
     """
     index = prog.item_index()
     root_of = {iid: index[iid].record for iid in input_ids if iid in index}
@@ -217,11 +247,8 @@ def generate_cases(
     cases: list[TestCase] = []
     seen: set[str] = set()
 
-    def encode(inputs: dict[str, dict[str, object]]) -> str:
-        lines = []
-        for rid, codec in codecs.items():
-            lines.append(codec.encode(inputs.get(root_name[rid], {})))
-        return "\n".join(lines) + "\n"
+    def encode(inputs: Inputs) -> str:
+        return encode_inputs(codecs, inputs)
 
     def push(tc: TestCase) -> None:
         if len(cases) >= max_cases:
@@ -245,26 +272,108 @@ def generate_cases(
                 return fx
         return base
 
+    def place(b: dict, assigns: list[tuple[ir.DataItem, str, object]]) -> Inputs:
+        inputs = _copy(b.get("inputs", {}))
+        for it, rname, value in assigns:
+            _assign(inputs, rname, it, value)
+        return inputs
+
+    # (n, iid, value, why, key, preferred fixture)
+    placements: list[tuple[int, str, object, str, str | None, dict]] = []
     n = 0
     for iid in sorted(col.values):
-        it = index[iid]
-        rname = root_name.get(root_of.get(iid, ""), None)
-        if rname is None:
+        if root_name.get(root_of.get(iid, ""), None) is None:
             continue
         for value, why, key in col.values[iid]:
-            b = baseline_for(iid, key)
-            inputs = _copy(b.get("inputs", {}))
-            if it.dims:
-                # table element: apply to every occurrence so the value reaches
-                # whichever occurrence the fixture actually uses
-                for occ in range(1, it.dims[0][1] + 1):
-                    inputs.setdefault(rname, {})[field_key(it, occ)] = value
-            else:
-                inputs.setdefault(rname, {})[field_key(it)] = value
             n += 1
-            kind = "edge" if why.startswith("edge") else "boundary"
-            on = f" [on fixture {b['id']}]" if b is not base else ""
-            push(TestCase(id=f"{kind}-{n:03d}", kind=kind, description=f"{it.name} = {value!s:.40} — {why}{on}", inputs=inputs))
+            placements.append((n, iid, value, why, key, baseline_for(iid, key)))
+
+    search = reaches is not None and bool(fixtures)
+    traced: set[str] = set()  # stdins already traced during this generation (not counted again)
+    pre = getattr(reaches, "prefetch", None)
+    if search:
+        if pre is not None:
+            try:
+                pre([place(b, [(index[iid], root_name[root_of[iid]], value)]) for _n, iid, value, _w, key, b in placements if key])
+            except TraceUnavailable:
+                search = False
+
+    def find_placement(iid: str, value: object, key: str, b: dict) -> tuple[Inputs, dict, list[tuple[str, object]], bool]:
+        """Return (inputs, fixture used, adjusted fields, reached)."""
+        it = index[iid]
+        own = (it, root_name[root_of[iid]], value)
+        first = place(b, [own])
+        first_stdin = encode(first)
+        attempts = 0 if first_stdin in traced else 1  # the preferred placement (batched by the prefetch above)
+        traced.add(first_stdin)
+        if reaches(first, key):
+            return first, b, [], True
+        # Ordered alternatives: (inputs, fixture, adjusted fields).
+        alternatives: list[tuple[Inputs, dict, list[tuple[str, object]]]] = []
+        # 2. other fixtures that execute the target statement, in fixture order
+        for fx in fixtures:
+            if fx is not b and key in cov.get(fx["id"], set()):
+                alternatives.append((place(fx, [own]), fx, []))
+        # 3. guard fields: inputs read by conditions executed (on the failing run) before the target
+        s_file, _, s_line = key.rpartition(":")
+        guard_ids: list[str] = []
+        for g_file, g_line, g_key, g_reads in sorted(col.guards, key=lambda g: (g[1], g[2])):
+            if g_file != s_file or g_line >= int(s_line) or not reaches(first, g_key):
+                continue
+            for gid in g_reads:
+                if gid != iid and gid not in guard_ids and gid in col.values and root_name.get(root_of.get(gid, ""), None):
+                    guard_ids.append(gid)
+
+        def assign(gid: str, gv: object) -> tuple[ir.DataItem, str, object]:
+            return (index[gid], root_name[root_of[gid]], gv)
+
+        firsts: dict[str, object] = {}  # first candidate of each guard field that changes the case
+        for gid in guard_ids:
+            for gv, _w, _k in col.values[gid]:
+                cand = place(b, [assign(gid, gv), own])
+                alternatives.append((cand, b, [(index[gid].name, gv)]))
+                if gid not in firsts and encode(cand) != first_stdin:
+                    firsts[gid] = gv
+        pair_ids = [g for g in guard_ids if g in firsts]
+        for i, g1 in enumerate(pair_ids):
+            for g2 in pair_ids[i + 1 :]:
+                cand = place(b, [assign(g1, firsts[g1]), assign(g2, firsts[g2]), own])
+                alternatives.append((cand, b, [(index[g1].name, firsts[g1]), (index[g2].name, firsts[g2])]))
+        # Budget: at most PLACEMENT_MAX_ATTEMPTS stdins not traced before (the failing first try counts).
+        selected: list[tuple[Inputs, dict, list[tuple[str, object]]]] = []
+        new: list[Inputs] = []
+        for alt in alternatives:
+            s = encode(alt[0])
+            if s not in traced:
+                if attempts >= PLACEMENT_MAX_ATTEMPTS:
+                    break
+                attempts += 1
+                traced.add(s)
+                new.append(alt[0])
+            selected.append(alt)
+        if new and pre is not None:
+            pre(new)  # one batched trace for the whole search
+        for cand, fx, adjusted in selected:
+            if reaches(cand, key):
+                return cand, fx, adjusted, True
+        return first, b, [], False
+
+    for n, iid, value, why, key, b in placements:
+        it = index[iid]
+        kind = "edge" if why.startswith("edge") else "boundary"
+        if search and key and len(cases) < max_cases:
+            try:
+                inputs, used, adjusted, reached = find_placement(iid, value, key, b)
+            except TraceUnavailable:
+                search = False
+            else:
+                adj = "".join(f"; {name}={v!s:.20}" for name, v in adjusted)
+                note = f" [on fixture {used['id']}{adj}]" + ("" if reached else f" [target {key} not reached]")
+                push(TestCase(id=f"{kind}-{n:03d}", kind=kind, description=f"{it.name} = {value!s:.40} — {why}{note}", inputs=inputs))
+                continue
+        inputs = place(b, [(it, root_name[root_of[iid]], value)])
+        on = f" [on fixture {b['id']}]" if b is not base else ""
+        push(TestCase(id=f"{kind}-{n:03d}", kind=kind, description=f"{it.name} = {value!s:.40} — {why}{on}", inputs=inputs))
     rng = random.Random(seed)
     keys = sorted(col.values)
     for k in range(n_random):
@@ -284,6 +393,21 @@ def generate_cases(
             picked.append(f"{field_key(it, occ)}={value!s:.20}")
         push(TestCase(id=f"random-{k + 1:03d}", kind="random", description=f"seed {seed}: " + ", ".join(picked)[:300], inputs=inputs))
     return cases
+
+
+def encode_inputs(codecs: dict[str, RecordCodec], inputs: Inputs) -> str:
+    """Harness stdin for ``inputs``: one encoded record per USING parameter."""
+    return "\n".join(codec.encode(inputs.get(codec.root.name, {})) for codec in codecs.values()) + "\n"
+
+
+def _assign(inputs: Inputs, rname: str, it: ir.DataItem, value: object) -> None:
+    if it.dims:
+        # table element: apply to every occurrence so the value reaches
+        # whichever occurrence the fixture actually uses
+        for occ in range(1, it.dims[0][1] + 1):
+            inputs.setdefault(rname, {})[field_key(it, occ)] = value
+    else:
+        inputs.setdefault(rname, {})[field_key(it)] = value
 
 
 def _copy(d: dict) -> dict:

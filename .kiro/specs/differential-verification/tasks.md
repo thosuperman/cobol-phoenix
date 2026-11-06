@@ -8,3 +8,4 @@
 - [x] 6. Mutation analysis (_Req 7_)
 - [x] 7. Reports (JSON + Markdown) (_Req 8_)
 - [x] 8. Coverage-guided boundary placement (fixtures traced through generated Python; boundaries attached to fixtures that execute the source statement) (_Req 1_)
+- [x] 9. Validity-aware placement: re-check each placed boundary case with traced Python; fall back to other fixtures, then to guard-field adjustments from collected candidates; deterministic and bounded; tests in backend/tests/test_verification.py; docs/verification.md mutation scores re-measured (_Req 1, 7, 9_)

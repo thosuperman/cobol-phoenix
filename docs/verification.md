@@ -24,6 +24,18 @@ the difference cannot be attributed to fields).
 5. **Coverage-guided placement** — fixtures are first run through the generated Python with line tracing; each
    boundary value is applied to a fixture that executes the statement it was derived from; table-element values
    are applied to every occurrence.
+6. **Validity-aware placement** — an earlier validation rule can still reject a placed boundary case before it
+   reaches its statement S (sample: `PR-DRIVER-AGE = 21` on a fixture with `PR-YEARS-LICENSED = 20` exits with
+   reason 107 before the age-band `EVALUATE` at `cobol/RATEENG.cbl:137`). Each boundary case is therefore traced
+   through the generated Python (never the uploaded COBOL; subprocess with a timeout, results cached by stdin).
+   If it misses S, the search tries (a) the other fixtures that execute S, in fixture order, then (b) the
+   preferred fixture with *guard fields* adjusted: input fields read by IF / EVALUATE / PERFORM UNTIL statements
+   that ran before S on the failing run, set only to values the candidate collector produced, one field at a
+   time and then in pairs. At most 24 newly traced inputs per boundary value. The description records the
+   fixture and every adjusted field (`… [on fixture young-sports-monthly]`, `… [on fixture F; PR-YEARS-LICENSED=2]`).
+   When the search is exhausted, the original placement is kept and annotated `[target S not reached]`. The search
+   has no randomness. Without a generated project or a working trace, placement is exactly step 5. Seeded random
+   cases are unchanged.
 
 Both runtimes share a fixed clock (`COB_CURRENT_DATE` for GnuCOBOL).
 
@@ -34,13 +46,19 @@ Mutation operators applied to the generated code (one site at a time): drop `ROU
 from the reference (GnuCOBOL output when available). Survivors are reported: they indicate untested behaviour or
 equivalent mutants (e.g. ROUNDED on an exact sum). The same mechanism powers the **fault injection** demo.
 
+Validity-aware placement raised the sample RATEENG score from 30/36 to 31/36: `relop@cobol/RATEENG.cbl:138`
+(`PR-DRIVER-AGE < 21` → `<=`) is now killed by the `PR-DRIVER-AGE = 21` case, which reaches the age band.
+`relop@cobol/RATEENG.cbl:128` (`UNTIL WS-ST-SUB > 8` → `>=`) still survives, and placement cannot fix it. The
+mutant only differs for the 8th state-table entry (AZ). The only AZ fixture is rejected at the vehicle-class check,
+and the collector derives no PR-STATE candidates from the VALUE-initialised `ST-CODE` table. This is a known gap.
+
 ## Evidence produced (actual runs, GnuCOBOL 3.2.0)
 
 | Target | Cases | Result | Statement coverage | Mutation score |
 |---|---|---|---|---|
-| Sample `RATEENG` | 127 | 127 VERIFIED | 95.0% | 30/36 (4 equivalent survivors, 2 untested boundaries) |
+| Sample `RATEENG` | 127 | 127 VERIFIED | 95.8% | 31/36 (4 equivalent survivors, 1 untested boundary: `relop@cobol/RATEENG.cbl:128`) |
 | Sample `PREMCALC` (batch, `fixtures/policies.txt`) | 1 | VERIFIED; output equals `expected-output.txt` | 92.0% | — |
-| Sample `RATEENG` with injected fault (drop ROUNDED on RR-BASE-PREMIUM) | 127 | 119 VERIFIED, **8 FAILED** | 95.0% | — |
+| Sample `RATEENG` with injected fault (drop ROUNDED on RR-BASE-PREMIUM) | 127 | 115 VERIFIED, **12 FAILED** | 95.8% | — |
 | Corpus `NBUW001` (mudasin1/COBOL_Sample_March_2026) | 180 | 180 VERIFIED | 96.3% | 36/43 |
 | Corpus drivers DRIVENBUW / DRIVESVC / DRIVECLM | 3 | Python output equals upstream golden files | — | — |
 
@@ -53,7 +71,7 @@ inputs only, not a proof of equivalence for all inputs.”*
   `python -E` (which ignores `PYTHONDONTWRITEBYTECODE`); two equal-size mutants written within the same second
   could execute the previous mutant's cached `.pyc`, making scores timing-dependent (sample RATEENG showed 33/36
   locally and 30/36 on the slower server). Fixed with `python -B` and a cache-free workspace copy; regression test
-  `test_mutants_evaluated_in_sequence_match_isolated_runs`. Correct scores: RATEENG 30/36, NBUW001 36/43.
+  `test_mutants_evaluated_in_sequence_match_isolated_runs`. Correct scores at that point: RATEENG 30/36, NBUW001 36/43 (RATEENG is 31/36 with validity-aware placement).
 
 ### Found by differential testing
 

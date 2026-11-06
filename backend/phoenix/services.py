@@ -7,6 +7,7 @@ import io
 import json
 import logging
 import shutil
+import subprocess
 import threading
 import zipfile
 from concurrent.futures import ThreadPoolExecutor
@@ -23,7 +24,7 @@ from .db import Generation, Project, VerificationRun, session
 from .verify.engine import FIXED_DATETIME, mutation_analysis, rule_status, verify
 from .verify.executors import Executor, make_executor
 from .verify.records import RecordCodec
-from .verify.testgen import TestCase, generate_cases
+from .verify.testgen import TestCase, TraceUnavailable, encode_inputs, generate_cases
 
 log = logging.getLogger("phoenix")
 FIXTURE_FILE = "phoenix-fixtures.json"
@@ -340,18 +341,58 @@ def pool() -> ThreadPoolExecutor:
     return _pool
 
 
-def fixture_coverage(project_dir: Path, entry: str, fixtures: list[TestCase]) -> dict[str, set[str]]:
+class PythonTracer:
+    """Statement keys executed by the *generated* Python (our own deterministic code, never the
+    uploaded COBOL) for a harness stdin, traced in a subprocess with a timeout and cached by stdin.
+
+    Instances are the ``reaches`` callback of ``generate_cases`` (validity-aware placement)."""
+
+    def __init__(self, project_dir: Path, entry: str, codecs: dict[str, RecordCodec]) -> None:
+        from .verify.engine import coverage_map
+
+        self.project_dir = project_dir
+        self.entry = entry
+        self.codecs = codecs
+        self.cmap = coverage_map(json.loads((project_dir / "traceability.json").read_text()))
+        self.cache: dict[str, frozenset[str]] = {}
+        self.runs = 0  # subprocess invocations
+
+    def trace_stdins(self, stdins: list[str]) -> None:
+        from .verify.engine import run_python
+
+        todo = list(dict.fromkeys(s for s in stdins if s not in self.cache))
+        if not todo:
+            return
+        cases = [TestCase(id=f"probe-{i}", kind="probe", description="", stdin=s) for i, s in enumerate(todo)]
+        self.runs += 1
+        try:
+            results = {r["id"]: r for r in run_python(self.project_dir, self.entry, "harness", cases, trace=True)}
+        except (OSError, subprocess.TimeoutExpired, ValueError) as exc:
+            raise TraceUnavailable(str(exc)) from exc
+        if any(str(r.get("error") or "").startswith("python runner failed") for r in results.values()):
+            raise TraceUnavailable("generated Python could not be traced")
+        for c in cases:
+            lines = results.get(c.id, {}).get("lines", [])
+            self.cache[c.stdin] = frozenset(self.cmap[(f, n)] for f, n in lines if (f, n) in self.cmap)
+
+    def keys(self, stdin: str) -> frozenset[str]:
+        self.trace_stdins([stdin])
+        return self.cache[stdin]
+
+    def prefetch(self, inputs_list: list[dict]) -> None:
+        self.trace_stdins([encode_inputs(self.codecs, i) for i in inputs_list])
+
+    def __call__(self, inputs: dict, key: str) -> bool:
+        return key in self.keys(encode_inputs(self.codecs, inputs))
+
+
+def fixture_coverage(project_dir: Path, entry: str, fixtures: list[TestCase], tracer: PythonTracer | None = None) -> dict[str, set[str]]:
     """Run fixture cases through the generated Python (our own deterministic code)
     and return the COBOL statement keys each fixture executes."""
-    from .verify.engine import coverage_map, run_python
-
-    trace = json.loads((project_dir / "traceability.json").read_text())
-    cmap = coverage_map(trace)
-    out: dict[str, set[str]] = {}
-    for r in run_python(project_dir, entry, "harness", fixtures, trace=True):
-        fid = r["id"].removeprefix("fixture-")
-        out[fid] = {cmap[(f, n)] for f, n in r.get("lines", []) if (f, n) in cmap}
-    return out
+    if tracer is None:
+        tracer = PythonTracer(project_dir, entry, {})
+    tracer.trace_stdins([c.stdin for c in fixtures])
+    return {c.id.removeprefix("fixture-"): set(tracer.cache[c.stdin]) for c in fixtures}
 
 
 def build_cases(pp: ProjectParse, entry: str, fixtures: list[dict], max_cases: int, project_dir: Path | None = None) -> list[TestCase]:
@@ -366,10 +407,16 @@ def build_cases(pp: ProjectParse, entry: str, fixtures: list[dict], max_cases: i
     codecs = {u: RecordCodec(index[u]) for u in prog.using}
     linkage_fixtures = [f for f in fixtures if "inputs" in f]
     coverage = None
-    if project_dir is not None and linkage_fixtures:
+    tracer: PythonTracer | None = None
+    if project_dir is not None and linkage_fixtures and (project_dir / "traceability.json").is_file():
         base_cases = generate_cases(prog, total.reads, codecs, linkage_fixtures, max_cases=len(linkage_fixtures), n_random=0)
-        coverage = fixture_coverage(project_dir, entry, [c for c in base_cases if c.kind == "fixture"])
-    return generate_cases(prog, total.reads, codecs, linkage_fixtures, max_cases=max_cases, fixture_coverage=coverage)
+        tracer = PythonTracer(project_dir, entry, codecs)
+        try:
+            coverage = fixture_coverage(project_dir, entry, [c for c in base_cases if c.kind == "fixture"], tracer)
+        except TraceUnavailable:
+            log.warning("generated Python could not be traced; boundary placement without coverage")
+            coverage, tracer = None, None
+    return generate_cases(prog, total.reads, codecs, linkage_fixtures, max_cases=max_cases, fixture_coverage=coverage, reaches=tracer)
 
 
 def start_verification(gid: str, with_mutation: bool) -> VerificationRun:

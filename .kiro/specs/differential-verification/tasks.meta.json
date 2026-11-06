@@ -1,0 +1,22 @@
+{
+  "pbtResults": {},
+  "executionHistory": {
+    "9. Validity-aware placement: re-check each placed boundary case with traced Python; fall back to other fixtures, then to guard-field adjustments from collected candidates; deterministic and bounded; tests in backend/tests/test_verification.py; docs/verification.md mutation scores re-measured (_Req 1, 7, 9_)": [
+      {
+        "executionId": "2906af6f-0b89-4895-8eab-022613c46066",
+        "chatSessionId": "sess_95b77ccc-31f6-443a-9c06-1c1bd5c2a824",
+        "timestamp": 1793943063043
+      },
+      {
+        "executionId": "9f590a7f-b7fe-452a-b8fe-0133e25bc38c",
+        "chatSessionId": "sess_95b77ccc-31f6-443a-9c06-1c1bd5c2a824",
+        "timestamp": 1793955047958
+      },
+      {
+        "executionId": "9f590a7f-b7fe-452a-b8fe-0133e25bc38c",
+        "chatSessionId": "sess_95b77ccc-31f6-443a-9c06-1c1bd5c2a824",
+        "timestamp": 1793974065005
+      }
+    ]
+  }
+}
