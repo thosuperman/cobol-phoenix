@@ -1,0 +1,3 @@
+# Shared ruff settings for code outside backend/ (runner/, scripts/); backend/pyproject.toml mirrors them.
+line-length = 160
+target-version = "py313"
