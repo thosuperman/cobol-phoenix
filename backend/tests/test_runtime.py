@@ -123,6 +123,59 @@ def test_initialize_and_string():
     assert out.text() == "ABCD12    " and not over
 
 
+def test_inspect_tallying_counts_non_overlapping_and_adds_to_counter():
+    r = rt.Region("R", 13)
+    t = rt.Alnum(r, 0, 10, "T")
+    cnt = rt.Numeric(r, 10, 3, "C", digits=3)
+    rt.move("AAAAB A B", t)  # padded with one trailing space
+    cnt.store(D(5))
+    cnt.store(cnt.value + rt.inspect_tally(t, "AA"))
+    assert cnt.value == D(7)  # "AAAA" holds two non-overlapping "AA", added to 5
+    assert rt.inspect_tally(t, rt.SPACES) == D(3)
+    assert rt.inspect_tally(t, "XYZ") == D(0)
+    assert isinstance(rt.inspect_tally(t, "A"), D)
+
+
+def test_inspect_replacing_all_operates_on_storage_bytes():
+    r = rt.Region("R", 8)
+    t = rt.Alnum(r, 0, 5, "T")
+    rt.move("ABAB", t)
+    rt.inspect_replace(t, "AB", "XY")
+    assert t.text() == "XYXY "
+    rt.inspect_replace(t, rt.SPACES, rt.ZEROS)
+    assert t.text() == "XYXY0"
+    rt.move("AAA", t)
+    rt.inspect_replace(t, "AA", "BB")  # left to right, non-overlapping
+    assert t.text() == "BBA  "
+    n = rt.Numeric(r, 5, 3, "N", digits=3)
+    n.store(D(105))
+    rt.inspect_replace(n, "0", "9")  # zoned digits of an unsigned DISPLAY numeric
+    assert n.value == D(195)
+    with pytest.raises(ValueError):
+        rt.inspect_replace(t, "AB", "X")
+
+
+@settings(max_examples=200, derandomize=True)
+@given(st.text(alphabet="AB ", max_size=12), st.sampled_from(["A", "AB", "BA", "AA", " "]))
+def test_property_inspect_matches_non_overlapping_scan(text, pat):
+    r = rt.Region("R", 12)
+    t = rt.Alnum(r, 0, 12, "T")
+    rt.move(text, t)
+    data = t.text()
+    # reference left-to-right non-overlapping scan
+    i = n = 0
+    while i <= len(data) - len(pat):
+        if data[i : i + len(pat)] == pat:
+            n, i = n + 1, i + len(pat)
+        else:
+            i += 1
+    assert rt.inspect_tally(t, pat) == D(n)
+    rt.inspect_replace(t, pat, "#" * len(pat))
+    out = t.text()
+    assert len(out) == 12 and out.count("#") == n * len(pat)
+    assert [c for c in out if c != "#"] == list(data.replace(pat, ""))
+
+
 def test_intrinsic_dates():
     assert rt.fn("INTEGER-OF-DATE", rt.lit("16010101")) == D(1)
     assert rt.fn("DATE-OF-INTEGER", rt.fn("INTEGER-OF-DATE", rt.lit("20240324")) + 3650) == D(20340322)

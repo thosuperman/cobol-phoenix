@@ -150,6 +150,13 @@ def stmt_access(s: ir.Stmt) -> Access:
         if s.pointer:
             target(s.pointer)
             r.add(s.pointer.item or "")
+    elif isinstance(s, ir.Inspect):
+        expr_refs(s.target, r, c)
+        if s.mode == "TALLYING" and s.counter is not None:
+            target(s.counter)
+            r.add(s.counter.item or "")  # TALLYING adds to the counter
+        elif s.mode == "REPLACING":
+            target(s.target)
     r.discard("")
     return a
 

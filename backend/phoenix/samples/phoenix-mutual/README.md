@@ -8,7 +8,7 @@ nightly auto-premium rating batch.
 |---|---|
 | `cobol/PREMCALC.cbl` | Batch driver: reads 45-byte policy records from SYSIN, CALLs `RATEENG`, prints a report and totals |
 | `cobol/RATEENG.cbl` | Rating engine (LINKAGE `USING POLICY-REC RATE-RESULT`): validation, state rate table, age/vehicle/coverage/deductible factors, risk points, discounts, minimum premium, installments |
-| `cobol/AUDITLOG.cbl` | Audit trail writer using file I/O and `INSPECT` — intentionally outside the supported subset, to show how unsupported constructs are reported |
+| `cobol/AUDITLOG.cbl` | Audit trail writer using file I/O (intentionally outside the supported subset, to show how unsupported constructs are reported) and `INSPECT … TALLYING … FOR ALL SPACES` (supported) |
 | `copy/POLICY.cpy`, `copy/RATERES.cpy`, `copy/RATETAB.cpy` | Copybooks (request, result, REDEFINES/OCCURS rate table) |
 | `fixtures/policies.txt` | 13 policy records + `END` |
 | `fixtures/expected-output.txt` | Output of `PREMCALC < policies.txt` captured from **GnuCOBOL 3.2.0** (`COB_CURRENT_DATE=2026/01/01 09:30:00`) |

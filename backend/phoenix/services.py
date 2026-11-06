@@ -263,7 +263,7 @@ def create_generation(pid: str, entry: str, name: str | None, mutation_id: str |
     proj_name = name or f"{entry.lower()}-service"
     fixtures = _fixtures_for(pid, entry)
     try:
-        gp = generate_project(pp, entry, proj_name, mutation=mutation)
+        gp = generate_project(pp, entry, proj_name, mutation=mutation, fixtures=fixtures)
     except GenerationError as exc:
         raise Conflict(str(exc))
     with session() as db:
@@ -419,7 +419,7 @@ def run_verification(rid: str) -> None:
     mutation = None
     if g.mutation_id:
         mutation = next((m for m in mutation_candidates(pp.program(g.entry).program) if m.id == g.mutation_id), None)
-    gp = generate_project(pp, g.entry, g.name, mutation=mutation)
+    gp = generate_project(pp, g.entry, g.name, mutation=mutation, fixtures=fixtures)
     out_dir = generation_dir(s, gid)
     report = verify(pp, gp, out_dir, cases, executor(s), progress=lambda m: _progress(rid, m))
     report["generation_id"] = gid

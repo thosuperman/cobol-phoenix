@@ -13,6 +13,43 @@ CORPUS = Path(os.environ.get("PHOENIX_CORPUS_DIR", ROOT / "corpus" / "repos"))
 RUNNER_IMAGE = os.environ.get("PHOENIX_RUNNER_IMAGE", "cobol-phoenix-runner:latest")
 
 
+# Main program exercising the supported INSPECT forms (used by codegen and differential tests).
+INSPECT_DEMO_SOURCE = """       IDENTIFICATION DIVISION.
+       PROGRAM-ID. INSPDEMO.
+       DATA DIVISION.
+       WORKING-STORAGE SECTION.
+       01  WS-TEXT            PIC X(20).
+       01  WS-CODE            PIC 9(5).
+       01  WS-SPACES          PIC 9(3) VALUE 5.
+       01  WS-AB              PIC 9(3) VALUE 0.
+       01  WS-SMALL           PIC 9 VALUE 0.
+       PROCEDURE DIVISION.
+       MAIN-PARA.
+           ACCEPT WS-TEXT
+           INSPECT WS-TEXT TALLYING WS-SPACES FOR ALL SPACES
+           INSPECT WS-TEXT TALLYING WS-AB FOR ALL "AB"
+           INSPECT WS-TEXT TALLYING WS-AB FOR ALL "AB"
+           INSPECT WS-TEXT TALLYING WS-SMALL FOR ALL "A"
+           DISPLAY "SPACES=" WS-SPACES " AB=" WS-AB " A=" WS-SMALL
+           INSPECT WS-TEXT REPLACING ALL "AB" BY "XY"
+           INSPECT WS-TEXT REPLACING ALL SPACES BY "*"
+           INSPECT WS-TEXT (1:3) REPLACING ALL "X" BY QUOTE
+           DISPLAY "TEXT=" WS-TEXT
+           MOVE 10203 TO WS-CODE
+           INSPECT WS-CODE REPLACING ALL "0" BY "9"
+           DISPLAY "CODE=" WS-CODE
+           STOP RUN.
+"""
+
+INSPECT_DEMO_STDIN = {
+    "mixed": "ABAB  AB\n",
+    "many-a": "AAAAAAAAAAAB XAAA\n",  # 14 x "A": the PIC 9 counter truncates high-order
+    "empty": "",
+    "overlap": "AAAABABAAB\n",
+    "long": "ABABABABABABABABABABABAB\n",  # longer than the 20-byte receiver
+}
+
+
 def sample_sources() -> dict[str, str]:
     from phoenix.cobol.project import SOURCE_EXTS
 

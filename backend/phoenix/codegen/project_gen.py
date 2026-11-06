@@ -225,6 +225,114 @@ class SchemaWriter:
         return cls
 
 
+@dataclass
+class RequestExamples:
+    """OpenAPI request examples derived from project fixtures.
+
+    ``accepted`` holds ``(fixture id, request body)`` pairs that satisfy the
+    PICTURE constraints of the request model; ``skipped`` holds
+    ``(fixture id, reason)`` for fixtures that cannot be posted as-is. Values are
+    never altered beyond stripping surrounding whitespace from numbers.
+    """
+
+    accepted: list[tuple[str, dict]] = field(default_factory=list)
+    skipped: list[tuple[str, str]] = field(default_factory=list)
+
+
+_NUMERIC_TEXT = re.compile(r"[+-]?\d+(\.\d+)?")
+MAX_STDIN_LINES = 10000
+
+
+def _numeric_example(lf: InterfaceLeaf, value: object) -> tuple[str | None, str]:
+    """Return (canonical text, "") when ``value`` passes the generated Decimal
+    field constraints (max_digits, decimal_places, ge=0), else (None, reason)."""
+    if isinstance(value, bool) or not isinstance(value, str | int):
+        return None, f"{lf.name}: numeric fixture values must be strings or integers"
+    text = str(value).strip()
+    if not _NUMERIC_TEXT.fullmatch(text):
+        return None, f"{lf.name}: {text!r} is not a decimal number"
+    if text.startswith("-") and not lf.signed:
+        return None, f"{lf.name}: negative value for unsigned PIC {lf.picture}"
+    int_part, _, frac_part = text.lstrip("+-").partition(".")
+    whole = len(int_part.lstrip("0")) or (0 if "." in text else 1)
+    frac = len(frac_part.rstrip("0"))
+    if frac > lf.scale or whole > lf.digits - lf.scale:
+        return None, f"{lf.name}: {text!r} exceeds PIC {lf.picture}"
+    return text, ""
+
+
+def _leaf_example(lf: InterfaceLeaf, value: object) -> tuple[str | None, str]:
+    if lf.kind == "numeric":
+        return _numeric_example(lf, value)
+    if not isinstance(value, str):
+        return None, f"{lf.name}: alphanumeric fixture values must be strings"
+    if len(value) > lf.size:
+        return None, f"{lf.name}: {len(value)} characters exceed PIC {lf.picture or 'X'} length {lf.size}"
+    return value, ""
+
+
+def _linkage_example(iface: Interface, inputs: object) -> tuple[dict | None, str]:
+    if not isinstance(inputs, dict):
+        return None, "fixture has no 'inputs' object"
+    params = {p.name.upper(): p for p in iface.params}
+    for rec in inputs:
+        if str(rec).upper() not in params:
+            return None, f"{rec}: not a USING parameter of {iface.entry}"
+        if str(rec).upper() not in {p.name.upper() for p in iface.params if p.inputs}:
+            return None, f"{rec}: parameter has no input fields in the request model"
+    body: dict = {}
+    for p in iface.params:  # interface order keeps the output independent of fixture key order
+        given = next((v for k, v in inputs.items() if str(k).upper() == p.name.upper()), None)
+        if given is None:
+            continue
+        if not isinstance(given, dict):
+            return None, f"{p.name}: fixture value must be an object of field values"
+        leaves = {n.name.upper(): n for n in p.inputs if isinstance(n, InterfaceLeaf)}
+        for key in given:
+            if str(key).upper() not in leaves:
+                return None, f"{key}: not an elementary input field of {p.name} in the request model"
+        values: dict = {}
+        for n in p.inputs:
+            if not isinstance(n, InterfaceLeaf):
+                continue
+            raw = next((v for k, v in given.items() if str(k).upper() == n.name.upper()), None)
+            if raw is None:
+                continue
+            text, why = _leaf_example(n, raw)
+            if text is None:
+                return None, why
+            values[n.py] = text
+        body[p.py] = values
+    return body, ""
+
+
+def _main_example(stdin: object) -> tuple[dict | None, str]:
+    if not isinstance(stdin, str):
+        return None, "fixture has no 'stdin' text"
+    lines = stdin.split("\n")
+    if lines and lines[-1] == "":
+        lines.pop()
+    if len(lines) > MAX_STDIN_LINES:
+        return None, f"stdin has {len(lines)} lines (max {MAX_STDIN_LINES})"
+    return {"stdin_lines": lines}, ""
+
+
+def request_examples(iface: Interface, fixtures: list[dict]) -> RequestExamples:
+    """Turn project fixtures into request bodies that the generated API accepts."""
+    out = RequestExamples()
+    for i, fx in enumerate(fixtures):
+        fid = str(fx.get("id") or f"fixture-{i + 1}") if isinstance(fx, dict) else f"fixture-{i + 1}"
+        if not isinstance(fx, dict):
+            out.skipped.append((fid, "fixture is not an object"))
+            continue
+        body, why = _main_example(fx.get("stdin")) if iface.mode == "main" else _linkage_example(iface, fx.get("inputs"))
+        if body is None:
+            out.skipped.append((fid, why))
+        else:
+            out.accepted.append((fid, body))
+    return out
+
+
 def generate_project(pp: ProjectParse, entry: str, project_name: str, mutation: Mutation | None = None, fixtures: list[dict] | None = None) -> GeneratedProject:
     entry = entry.upper()
     if pp.program(entry) is None:
@@ -252,7 +360,8 @@ def generate_project(pp: ProjectParse, entry: str, project_name: str, mutation: 
     reg_lines += ["", "REGISTRY = {"] + [f"    {m.program_id!r}: {m.class_name}," for m in modules] + ["}", ""]
     files["app/programs/__init__.py"] = "\n".join(reg_lines)
     files["app/interface.json"] = json.dumps(asdict(iface), indent=2)
-    files["app/schemas.py"] = _schemas(iface)
+    examples = request_examples(iface, fixtures or [])
+    files["app/schemas.py"] = _schemas(iface, examples)
     files["app/service.py"] = _service(iface, entry_mod)
     files["app/main.py"] = _main(iface, project_name)
     files["app/cli.py"] = CLI_TEMPLATE
@@ -273,7 +382,9 @@ def generate_project(pp: ProjectParse, entry: str, project_name: str, mutation: 
                 }
             )
     files["traceability.json"] = json.dumps(traceability, indent=1)
-    cases = fixtures or []
+    # Only fixtures with raw stdin can be replayed by app.cli; field-level
+    # fixtures are encoded into stdin by the verification run instead.
+    cases = [f for f in fixtures or [] if isinstance(f, dict) and isinstance(f.get("stdin"), str)]
     files["tests/cases.json"] = json.dumps({"entry": entry, "mode": iface.mode, "source": "fixtures", "cases": cases}, indent=2)
     files["tests/__init__.py"] = ""
     files["tests/test_cases.py"] = TEST_CASES_TEMPLATE
@@ -282,7 +393,7 @@ def generate_project(pp: ProjectParse, entry: str, project_name: str, mutation: 
     files["pytest.ini"] = "[pytest]\ntestpaths = tests\n"
     files["Dockerfile"] = DOCKERFILE_TEMPLATE
     unsupported = [dict(u, program=m.program_id) for m in modules for u in m.unsupported]
-    files["README.md"] = _readme(project_name, entry, order, missing, iface, modules, unsupported, mutation)
+    files["README.md"] = _readme(project_name, entry, order, missing, iface, modules, unsupported, mutation, examples)
     del pkg
     return GeneratedProject(
         name=project_name, entry=entry, files=files, modules=modules, interface=iface, traceability=traceability,
@@ -291,7 +402,60 @@ def generate_project(pp: ProjectParse, entry: str, project_name: str, mutation: 
 
 
 # ---------------------------------------------------------------- templates
-def _schemas(iface: Interface) -> str:
+def _py_literal(value: object, indent: int) -> list[str]:
+    """Deterministic, repr()-escaped Python literal for nested dict/list/str data."""
+    pad = " " * indent
+    if isinstance(value, dict):
+        if not value:
+            return ["{}"]
+        out = ["{"]
+        for k, v in value.items():
+            sub = _py_literal(v, indent + 4)
+            out.append(f"{pad}    {k!r}: {sub[0]}")
+            out.extend(sub[1:])
+            out[-1] += ","
+        out.append(f"{pad}}}")
+        return out
+    if isinstance(value, list):
+        if not value:
+            return ["[]"]
+        out = ["["]
+        for v in value:
+            sub = _py_literal(v, indent + 4)
+            out.append(f"{pad}    {sub[0]}")
+            out.extend(sub[1:])
+            out[-1] += ","
+        out.append(f"{pad}]")
+        return out
+    if isinstance(value, str):
+        return [repr(value)]
+    raise TypeError(f"unsupported example value type {type(value).__name__}")
+
+
+def _examples_block(examples: RequestExamples) -> list[str]:
+    ids = [fid for fid, _ in examples.accepted]
+    bodies = [body for _, body in examples.accepted]
+    id_lit = _py_literal(ids, 0)
+    body_lit = _py_literal(bodies, 0)
+    return [
+        "# Request examples taken from the project fixtures. Fixtures that do not satisfy",
+        "# the PICTURE constraints of the request model are listed in README.md instead.",
+        f"REQUEST_EXAMPLE_IDS: list[str] = {id_lit[0]}",
+        *id_lit[1:],
+        f"REQUEST_EXAMPLES: list[dict] = {body_lit[0]}",
+        *body_lit[1:],
+        "",
+        "",
+    ]
+
+
+def _request_config(examples: RequestExamples) -> str:
+    if examples.accepted:
+        return "    model_config = ConfigDict(extra='forbid', json_schema_extra={'examples': REQUEST_EXAMPLES})"
+    return "    model_config = ConfigDict(extra='forbid')"
+
+
+def _schemas(iface: Interface, examples: RequestExamples) -> str:
     sw = SchemaWriter()
     head = [
         '"""Pydantic request/response models derived from the COBOL record layouts."""',
@@ -308,10 +472,11 @@ def _schemas(iface: Interface) -> str:
     if iface.mode == "main":
         head.remove("from decimal import Decimal")
         head.remove("")  # keep a single blank line between import groups
+        sw.lines += _examples_block(examples)
         sw.lines += [
             f"class {base}Request(BaseModel):",
-            "    model_config = ConfigDict(extra='forbid')",
-            "    stdin_lines: list[str] = Field(default_factory=list, max_length=10000, description='Lines read by ACCEPT statements')",
+            _request_config(examples),
+            f"    stdin_lines: list[str] = Field(default_factory=list, max_length={MAX_STDIN_LINES}, description='Lines read by ACCEPT statements')",
             "",
             "",
             f"class {base}Response(BaseModel):",
@@ -328,7 +493,8 @@ def _schemas(iface: Interface) -> str:
         if p.outputs:
             m = sw.model(f"{base}{_camel(p.name)}Output", p.outputs, False)
             resp_fields.append(f"    {p.py}: {m}")
-    sw.lines += [f"class {base}Request(BaseModel):", "    model_config = ConfigDict(extra='forbid')"] + (req_fields or ["    pass"]) + ["", ""]
+    sw.lines += _examples_block(examples)
+    sw.lines += [f"class {base}Request(BaseModel):", _request_config(examples)] + (req_fields or ["    pass"]) + ["", ""]
     sw.lines += [f"class {base}Response(BaseModel):", "    status: str = Field(description='completed | stopped (STOP RUN)')"] + resp_fields + [""]
     return "\n".join(head + sw.lines)
 
@@ -472,11 +638,38 @@ def traceability() -> list[dict]:
 
 def _test_api(iface: Interface) -> str:
     slug = iface.entry.lower().replace("_", "-")
-    return f"""from fastapi.testclient import TestClient
+    return f"""import pytest
+from fastapi.testclient import TestClient
 
 from app.main import app
+from app.schemas import REQUEST_EXAMPLE_IDS, REQUEST_EXAMPLES
 
 client = TestClient(app)
+EXECUTE = "/api/v1/{slug}/execute"
+
+
+def _request_schema() -> dict:
+    spec = app.openapi()
+    ref = spec["paths"][EXECUTE]["post"]["requestBody"]["content"]["application/json"]["schema"]["$ref"]
+    return spec["components"]["schemas"][ref.rsplit("/", 1)[-1]]
+
+
+OPENAPI_EXAMPLES = _request_schema().get("examples", [])
+EXAMPLE_PARAMS = [pytest.param(body, id=fid) for fid, body in zip(REQUEST_EXAMPLE_IDS, OPENAPI_EXAMPLES)] or [
+    pytest.param(None, id="no-examples", marks=pytest.mark.skip(reason="no project fixture satisfies the request schema; no examples were generated"))
+]
+
+
+def test_openapi_examples_match_fixtures() -> None:
+    assert OPENAPI_EXAMPLES == REQUEST_EXAMPLES
+    assert len(REQUEST_EXAMPLE_IDS) == len(REQUEST_EXAMPLES)
+
+
+@pytest.mark.parametrize("example", EXAMPLE_PARAMS)
+def test_execute_openapi_example(example: dict) -> None:
+    r = client.post(EXECUTE, json=example)
+    assert r.status_code == 200, r.text
+    assert r.json()["status"] in ("completed", "stopped")
 
 
 def test_health() -> None:
@@ -512,6 +705,7 @@ def _readme(
     modules: list[GeneratedModule],
     unsupported: list[dict],
     mutation: Mutation | None,
+    examples: RequestExamples | None = None,
 ) -> str:
     slug = entry.lower().replace("_", "-")
     lines = [
@@ -543,6 +737,23 @@ def _readme(
         "```",
         "",
         f"`POST /api/v1/{slug}/execute` — interface mode: **{iface.mode}**.",
+        "",
+        "## Request examples",
+        "",
+    ]
+    examples = examples or RequestExamples()
+    if examples.accepted:
+        lines.append(
+            f"The OpenAPI schema (`/docs`) carries {len(examples.accepted)} request example(s) taken from the project fixtures: "
+            + ", ".join(f"`{fid}`" for fid, _ in examples.accepted)
+            + ". `tests/test_api.py` posts each one and expects HTTP 200."
+        )
+    else:
+        lines.append("No project fixture could be used as a request example.")
+    if examples.skipped:
+        lines += ["", "Fixtures not usable as request examples:", "", "| Fixture | Reason |", "|---|---|"]
+        lines += [f"| {fid} | {why} |" for fid, why in examples.skipped]
+    lines += [
         "",
         "## Semantics",
         "",

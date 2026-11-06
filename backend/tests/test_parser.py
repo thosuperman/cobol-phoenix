@@ -31,7 +31,7 @@ PROGRAM = """       IDENTIFICATION DIVISION.
            PERFORM VARYING CNT FROM 1 BY 1 UNTIL CNT > 3
               MOVE "XX" TO T-CODE (CNT)
            END-PERFORM
-           INSPECT B TALLYING CNT FOR ALL "A"
+           INSPECT B TALLYING CNT FOR CHARACTERS
            GOBACK.
        SUB-PARA.
            EXIT.
@@ -95,4 +95,59 @@ def test_sample_project_parses_without_errors(sample_parse):
     for p in sample_parse.programs:
         assert not [d for d in p.diagnostics if str(d.severity) == "error"], p.diagnostics
     audit = sample_parse.program("AUDITLOG")
-    assert {u["construct"] for u in audit.unsupported} >= {"OPEN", "WRITE", "CLOSE", "INSPECT"}
+    assert {u["construct"] for u in audit.unsupported} >= {"OPEN", "WRITE", "CLOSE"}
+    # INSPECT RR-MESSAGE TALLYING WS-SPACE-COUNT FOR ALL SPACES (line 38) is in the supported subset
+    assert not any(u["construct"] == "INSPECT" for u in audit.unsupported)
+    insp = [s for p in audit.program.paragraphs for s in ir.walk_statements(p.statements) if isinstance(s, ir.Inspect)]
+    assert len(insp) == 1 and insp[0].loc.line == 38 and insp[0].pattern.kind == "figurative" and insp[0].pattern.value == "SPACE"
+
+
+INSPECT_PROGRAM = """       IDENTIFICATION DIVISION.
+       PROGRAM-ID. INSP.
+       DATA DIVISION.
+       WORKING-STORAGE SECTION.
+       01  TXT            PIC X(10).
+       01  CNT            PIC 9(3).
+       PROCEDURE DIVISION.
+       MAIN-PARA.
+           INSPECT TXT TALLYING CNT FOR ALL "AB"
+           INSPECT TXT REPLACING ALL "A" BY "Z"
+           INSPECT TXT REPLACING ALL SPACES BY ZERO
+           INSPECT TXT (2:3) TALLYING CNT FOR ALL QUOTE
+           INSPECT TXT TALLYING CNT FOR CHARACTERS
+           INSPECT TXT TALLYING CNT FOR LEADING "A"
+           INSPECT TXT REPLACING FIRST "A" BY "B"
+           INSPECT TXT TALLYING CNT FOR ALL "A" BEFORE INITIAL "B"
+           INSPECT TXT CONVERTING "AB" TO "XY"
+           INSPECT TXT TALLYING CNT FOR ALL "A" ALL "B"
+           INSPECT TXT TALLYING CNT FOR ALL TXT
+           INSPECT TXT REPLACING ALL "AB" BY "X"
+           GOBACK.
+"""
+
+
+def test_inspect_supported_forms_parse_into_ir():
+    pp = parse(INSPECT_PROGRAM)
+    stmts = pp.program.paragraphs[0].statements
+    tally, repl, fig, refmod = stmts[:4]
+    assert isinstance(tally, ir.Inspect) and tally.mode == "TALLYING" and tally.loc.line == 9
+    assert tally.target.item == "TXT" and tally.counter.item == "CNT" and tally.pattern.value == "AB"
+    assert isinstance(repl, ir.Inspect) and repl.mode == "REPLACING" and repl.pattern.value == "A" and repl.replacement.value == "Z"
+    assert fig.pattern.kind == "figurative" and fig.pattern.value == "SPACE" and fig.replacement.value == "ZERO"
+    assert refmod.target.refmod is not None and refmod.pattern.value == "QUOTE"
+    assert isinstance(stmts[-1], ir.Goback)
+    # the IR stays JSON serialisable
+    assert ir.to_jsonable(tally)["_t"] == "Inspect"
+
+
+def test_other_inspect_forms_are_reported_unsupported_with_location():
+    pp = parse(INSPECT_PROGRAM)
+    stmts = pp.program.paragraphs[0].statements
+    unsupported = [s for s in stmts if isinstance(s, ir.Unsupported)]
+    assert [s.loc.line for s in unsupported] == list(range(13, 21))
+    assert all(s.verb == "INSPECT" and s.reason for s in unsupported)
+    assert {u["line"] for u in pp.unsupported if u["construct"] == "INSPECT"} == set(range(13, 21))
+    # mismatched REPLACING lengths are an error diagnostic as well
+    assert any(d.code == "PRC003" and d.line == 20 for d in pp.diagnostics)
+    # nothing after an unsupported INSPECT is swallowed
+    assert isinstance(stmts[-1], ir.Goback) and len(stmts) == 13

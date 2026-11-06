@@ -42,7 +42,7 @@
       "build_command": "bash scripts/build.sh   (cobc -x -free -I copybooks src/<PROG>.cob)",
       "test_command": "./bin/SMOKETEST",
       "migration_unit": null,
-      "expected": {"programs": 18, "unsupported_constructs": 208}
+      "expected": {"programs": 18, "unsupported_constructs": 206}
     }
   ]
 }

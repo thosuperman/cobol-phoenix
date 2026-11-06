@@ -396,6 +396,25 @@ class StringStmt(Stmt):
 
 
 @dataclass
+class Inspect(Stmt):
+    """INSPECT in the supported subset (one clause, ALL <literal>, no BEFORE/AFTER).
+
+    mode TALLYING: ``counter`` is incremented by the number of non-overlapping
+    occurrences of ``pattern`` in ``target`` (scanned left to right).
+    mode REPLACING: every non-overlapping occurrence of ``pattern`` is replaced
+    by ``replacement`` (same length; a figurative replacement is repeated to the
+    pattern length).
+    """
+
+    mode: str = ""  # TALLYING | REPLACING
+    target: Ref = None  # type: ignore[assignment]
+    pattern: Literal = None  # type: ignore[assignment]
+    counter: Ref | None = None
+    replacement: Literal | None = None
+    kind: str = "INSPECT"
+
+
+@dataclass
 class Unsupported(Stmt):
     verb: str = ""
     reason: str = ""

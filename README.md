@@ -106,7 +106,7 @@ original auto-insurance rating batch: `PREMCALC` reads policies and CALLs the ra
 (validation, REDEFINES/OCCURS state rate table, age/vehicle/coverage/deductible factors, risk points, discounts,
 minimum premium, installments). `AUDITLOG` uses file I/O on purpose to show unsupported-construct reporting.
 
-1. **Import sample** — 3 programs, 3 copybooks, 27 rules, 4 unsupported constructs (all in `AUDITLOG`).
+1. **Import sample** — 3 programs, 3 copybooks, 27 rules, 3 unsupported constructs (all file I/O in `AUDITLOG`).
 2. **Business rules** — e.g. `PM-404 Base Premium`, cited to `cobol/RATEENG.cbl:197-205`, with its COMPUTE ROUNDED and ON SIZE ERROR.
 3. **Generate** `RATEENG` — typed endpoint `POST /api/v1/rateeng/execute`, 120 COBOL statements traced.
 4. **Verify** — 127/127 cases identical in GnuCOBOL 3.2.0 and Python; 95.0% statement coverage; mutation analysis 33/36 killed (the 3 survivors are equivalent mutants).
@@ -124,7 +124,7 @@ committed — see [corpus/manifest.json](corpus/manifest.json) and [docs/corpus-
 |---|---|
 | [mudasin1/COBOL_Sample_March_2026](https://github.com/mudasin1/COBOL_Sample_March_2026) (term life insurance) | 6 programs, 0 parse errors. Generated Python for all three upstream drivers reproduces the upstream golden files byte-for-byte. `NBUW001` (eligibility & premium): **180/180** differential cases identical to GnuCOBOL, 96.3% statement coverage, mutation score 83.7%. |
 | [achalc/cobol-bank-demo](https://github.com/achalc/cobol-bank-demo) (banking) | 2 programs, 0 parse errors, 159 unsupported constructs (file I/O, INSPECT) reported with locations. |
-| [albertdobmeyer/cobol-legacy-ledger](https://github.com/albertdobmeyer/cobol-legacy-ledger) (free format, MIT) | 18 programs, 0 parse errors, free format auto-detected, 208 unsupported constructs (file I/O, ALTER, REPORT SECTION, SORT, …) reported. |
+| [albertdobmeyer/cobol-legacy-ledger](https://github.com/albertdobmeyer/cobol-legacy-ledger) (free format, MIT) | 18 programs, 0 parse errors, free format auto-detected, 206 unsupported constructs (file I/O, ALTER, REPORT SECTION, SORT, …) reported. |
 
 ## 10. Supported COBOL subset
 
@@ -143,7 +143,8 @@ committed — see [corpus/manifest.json](corpus/manifest.json) and [docs/corpus-
 | PERFORM, PERFORM THRU, TIMES, UNTIL (BEFORE/AFTER), VARYING … AFTER, inline PERFORM, GO TO (simple), EXIT [PARAGRAPH/PROGRAM/PERFORM] | Verified |
 | CALL … USING (BY REFERENCE / CONTENT), GOBACK, STOP RUN, INITIALIZE, SET (TRUE/TO/UP/DOWN), STRING, DISPLAY, ACCEPT (stdin, DATE, DAY, TIME) | Verified |
 | Intrinsics: INTEGER-OF-DATE, DATE-OF-INTEGER, TRIM, UPPER/LOWER-CASE, LENGTH, MAX/MIN, ABS, MOD, REM, INTEGER(-PART), NUMVAL, SUM, … | INTEGER-OF-DATE, DATE-OF-INTEGER, TRIM verified; others unit-level |
-| File I/O (OPEN/READ/WRITE/…), SORT/MERGE, INSPECT, UNSTRING, SEARCH, ALTER, GO TO DEPENDING, EXEC SQL/CICS, REPORT/SCREEN SECTION, DECLARATIVES, NEXT SENTENCE, RENAMES, pointers, COMP-1/COMP-2 | **Unsupported** — detected, reported with location, generated as an explicit `UnsupportedConstruct` |
+| `INSPECT … TALLYING counter FOR ALL literal`, `INSPECT … REPLACING ALL literal BY literal` (literal or figurative, one clause, no BEFORE/AFTER) | Verified |
+| File I/O (OPEN/READ/WRITE/…), SORT/MERGE, other INSPECT forms (CHARACTERS, LEADING, FIRST, BEFORE/AFTER INITIAL, CONVERTING, several clauses), UNSTRING, SEARCH, ALTER, GO TO DEPENDING, EXEC SQL/CICS, REPORT/SCREEN SECTION, DECLARATIVES, NEXT SENTENCE, RENAMES, pointers, COMP-1/COMP-2 | **Unsupported** — detected, reported with location, generated as an explicit `UnsupportedConstruct` |
 
 Full matrix and semantics: [docs/cobol-support.md](docs/cobol-support.md).
 

@@ -23,7 +23,7 @@ __all__ = [
     "Region", "Alnum", "Numeric", "Packed", "Binary", "Edited", "AlnumEdited", "Group",
     "Condition", "RunContext", "Program", "Fig", "SPACES", "ZEROS", "HIGH_VALUES", "LOW_VALUES",
     "QUOTES", "AllOf", "lit", "move", "cmp", "div", "power", "display", "accept", "initialize",
-    "string_into", "fn", "is_numeric_class", "num", "text_of",
+    "string_into", "fn", "is_numeric_class", "num", "text_of", "inspect_tally", "inspect_replace",
 ]  # fmt: skip
 
 CTX = Context(prec=64, rounding=ROUND_DOWN, Emax=999999, Emin=-999999, traps=[InvalidOperation, DivisionByZero])
@@ -928,6 +928,38 @@ def string_into(target: Field, parts: list[tuple], pointer: Field | None = None)
     if pointer is not None:
         pointer.store(Decimal(pos))
     return overflow
+
+
+# ---------------------------------------------------------------- INSPECT
+def _inspect_bytes(operand, length: int | None = None) -> bytes:
+    """Bytes of an INSPECT literal operand. Figuratives are one character, or
+    ``length`` characters when used as a REPLACING ... BY operand."""
+    if isinstance(operand, Fig):
+        return (operand.char * (length or 1)).encode("latin-1")
+    if isinstance(operand, str) and operand:
+        return operand.encode("latin-1", "replace")
+    raise ValueError(f"invalid INSPECT operand {operand!r}")
+
+
+def inspect_tally(target: Field, pattern) -> Decimal:
+    """INSPECT target TALLYING ... FOR ALL pattern.
+
+    Returns the number of non-overlapping occurrences of ``pattern`` in the
+    storage bytes of ``target``, scanning left to right. The caller ADDs the
+    result to the counter (the counter is never reset)."""
+    return Decimal(target.raw().count(_inspect_bytes(pattern)))
+
+
+def inspect_replace(target: Field, pattern, replacement) -> None:
+    """INSPECT target REPLACING ALL pattern BY replacement (same length)."""
+    pat = _inspect_bytes(pattern)
+    rep = _inspect_bytes(replacement, len(pat))
+    if len(rep) != len(pat):
+        raise ValueError("INSPECT REPLACING: replacement and pattern lengths differ")
+    data = target.raw()
+    new = data.replace(pat, rep)
+    if new != data:
+        target.set_raw(new)
 
 
 # ---------------------------------------------------------------- intrinsic functions

@@ -37,7 +37,11 @@ detected and reported; generated as `raise UnsupportedConstruct(...)`.
 | FUNCTION INTEGER-OF-DATE, DATE-OF-INTEGER, TRIM | Verified | |
 | FUNCTION UPPER-CASE, LOWER-CASE, LENGTH, MAX, MIN, ABS, MOD, REM, INTEGER, INTEGER-PART, NUMVAL, SUM, MEAN, … | Unit / Parsed | others reported |
 | OPEN/CLOSE/READ/WRITE/REWRITE/DELETE/START, SORT/MERGE/RELEASE/RETURN | Unsupported | |
-| INSPECT, UNSTRING, SEARCH, ALTER, CANCEL, ENTRY, EXEC SQL/CICS | Unsupported | |
+| INSPECT id TALLYING counter FOR ALL literal | Verified | literal = alphanumeric literal or figurative constant (one character); counts non-overlapping occurrences left to right in the item's storage bytes and ADDs them to the counter (never resets it); counter stores follow normal numeric truncation |
+| INSPECT id REPLACING ALL literal BY literal | Verified | replacement must have the pattern's length (mismatch = `PRC003` error + Unsupported); a figurative replacement is repeated to the pattern length; reference modification allowed |
+| Other INSPECT forms: TALLYING FOR CHARACTERS / LEADING, REPLACING CHARACTERS / LEADING / FIRST, BEFORE / AFTER INITIAL, CONVERTING, several FOR / BY operands or both TALLYING and REPLACING in one statement, identifier or numeric operands | Unsupported | reported with the statement's line range |
+| INSPECT on signed numeric DISPLAY or COMP / COMP-3 items | Unsupported | GnuCOBOL strips the sign during INSPECT; the generator emits `UnsupportedConstruct` instead of guessing |
+| UNSTRING, SEARCH, ALTER, CANCEL, ENTRY, EXEC SQL/CICS | Unsupported | |
 | SCREEN / REPORT / COMMUNICATION SECTION, DECLARATIVES | Unsupported | |
 
 ## Numeric semantics (GnuCOBOL 3.2 default dialect)

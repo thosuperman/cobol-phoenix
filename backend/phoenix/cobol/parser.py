@@ -25,14 +25,14 @@ FIGURATIVES = {
 SUPPORTED_VERBS = {
     "MOVE", "COMPUTE", "ADD", "SUBTRACT", "MULTIPLY", "DIVIDE", "IF", "EVALUATE", "PERFORM",
     "CALL", "STOP", "GOBACK", "EXIT", "CONTINUE", "DISPLAY", "ACCEPT", "INITIALIZE", "SET",
-    "STRING", "GO",
+    "STRING", "GO", "INSPECT",
 }  # fmt: skip
 
 KNOWN_UNSUPPORTED = {
     "OPEN": "file-io", "CLOSE": "file-io", "READ": "file-io", "WRITE": "file-io",
     "REWRITE": "file-io", "DELETE": "file-io", "START": "file-io", "SORT": "file-io",
     "MERGE": "file-io", "RELEASE": "file-io", "RETURN": "file-io", "UNLOCK": "file-io",
-    "INSPECT": "statement", "UNSTRING": "statement", "SEARCH": "statement",
+    "UNSTRING": "statement", "SEARCH": "statement",
     "EXEC": "embedded", "ALTER": "statement", "CANCEL": "statement", "ENTRY": "statement",
     "GENERATE": "report-writer", "INITIATE": "report-writer", "TERMINATE": "report-writer",
     "USE": "declaratives", "INVOKE": "oo", "ALLOCATE": "statement", "FREE": "statement",
@@ -752,7 +752,8 @@ class Parser:
                     u = t.value.upper()
                     if u in ("AT", "INVALID", "OVERFLOW", "EXCEPTION") or (u == "END" and verb in ("READ", "RETURN", "SEARCH")):
                         phrase = True
-                    if u in ALL_VERBS and not phrase and u != verb:
+                    # INSPECT has no nested form: a second INSPECT starts a new statement
+                    if u in ALL_VERBS and not phrase and (u != verb or verb == "INSPECT"):
                         break
                     if u in SCOPE_TERMINATORS or u in ("ELSE", "WHEN"):
                         break
@@ -1526,6 +1527,65 @@ class Parser:
         st.loc = self.loc(start, self.last_tok())
         return st
 
+    def st_inspect(self) -> ir.Stmt:
+        """INSPECT id TALLYING counter FOR ALL lit | INSPECT id REPLACING ALL lit BY lit.
+
+        Every other INSPECT form raises :class:`NotSupported` and becomes an
+        ``Unsupported`` node covering the whole statement.
+        """
+        start = self.next()
+        target = self.parse_identifier()
+        st = ir.Inspect(loc=self.loc(start), target=target)
+        if self.accept_word("TALLYING"):
+            st.mode = "TALLYING"
+            st.counter = self.parse_identifier()
+            self.expect_word("FOR")
+            if not self.accept_word("ALL"):
+                raise NotSupported("INSPECT TALLYING FOR CHARACTERS / LEADING is not supported", self.peek())
+            st.pattern = self._inspect_literal()
+        elif self.accept_word("REPLACING"):
+            st.mode = "REPLACING"
+            if not self.accept_word("ALL"):
+                raise NotSupported("INSPECT REPLACING CHARACTERS / LEADING / FIRST is not supported", self.peek())
+            st.pattern = self._inspect_literal()
+            self.expect_word("BY")
+            st.replacement = self._inspect_literal()
+            plen = len(st.pattern.value) if st.pattern.kind == "string" else 1
+            if st.replacement.kind == "string" and len(st.replacement.value) != plen:
+                raise ParseError(f"REPLACING ALL: replacement length {len(st.replacement.value)} differs from pattern length {plen}", self.last_tok())
+        elif self.at_word("CONVERTING"):
+            raise NotSupported("INSPECT CONVERTING is not supported", self.peek())
+        else:
+            raise NotSupported("unsupported INSPECT form", self.peek())
+        if self.at_word("BEFORE", "AFTER"):
+            raise NotSupported("INSPECT BEFORE / AFTER INITIAL is not supported", self.peek())
+        if not self._at_statement_end():
+            raise NotSupported("INSPECT with more than one TALLYING / REPLACING operand is not supported", self.peek())
+        st.loc = self.loc(start, self.last_tok())
+        return st
+
+    def _inspect_literal(self) -> ir.Literal:
+        t = self.peek()
+        if t is not None and t.kind == TK.STRING:
+            if not t.value:
+                raise ParseError("INSPECT operand must not be an empty literal", t)
+            self.next()
+            return ir.Literal("string", t.value, all=True, loc=self.loc(t))
+        if t is not None and t.kind == TK.WORD and t.value.upper() in FIGURATIVES:
+            self.next()
+            return ir.Literal("figurative", FIGURATIVES[t.value.upper()], all=True, loc=self.loc(t))
+        raise NotSupported("INSPECT operands other than alphanumeric literals / figurative constants are not supported", t)
+
+    def _at_statement_end(self) -> bool:
+        t = self.peek()
+        if t is None or t.kind == TK.PERIOD or self.at_division() is not None:
+            return True
+        if t.kind == TK.WORD and t.value.upper() in STOP_WORDS:
+            return True
+        n1 = self.peek(1)
+        # missing period before a paragraph header
+        return t.kind in (TK.WORD, TK.NUMBER) and n1 is not None and n1.kind == TK.PERIOD and t.value.upper() in self.paragraph_names
+
     # ------------------------------------------------------------ resolution
     def resolve_program(self, prog: ir.Program) -> None:
         index = prog.item_index()
@@ -1680,6 +1740,10 @@ class Parser:
                 res_ref(s.into)
                 if s.pointer:
                     res_ref(s.pointer)
+            elif isinstance(s, ir.Inspect):
+                res_ref(s.target)
+                if s.counter is not None:
+                    res_ref(s.counter)
 
         for p in prog.paragraphs:
             for s in ir.walk_statements(p.statements):

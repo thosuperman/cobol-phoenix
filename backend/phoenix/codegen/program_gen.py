@@ -891,6 +891,38 @@ class ProgramGenerator:
             self.emit(ind, "else:")
             self._emit_block(s.not_on_overflow, ind + 1)
 
+    def _inspect_operand(self, lit: ir.Literal | None) -> str:
+        if lit is None:
+            raise _GenUnsupported("INSPECT without operand")
+        if lit.kind == "figurative":
+            return FIG_PY[lit.value]
+        if lit.kind == "string" and lit.value:
+            return repr(lit.value)
+        raise _GenUnsupported(f"INSPECT operand {lit.value!r}")
+
+    def _st_inspect(self, s: ir.Inspect, ind: int) -> None:
+        it = self.index.get(s.target.item or "")
+        if it is None:
+            raise _GenUnsupported(f"unresolved reference {s.target.name}")
+        if it.is_constant:
+            raise _GenUnsupported(f"INSPECT of constant {s.target.name}")
+        if s.target.refmod is None and it.is_numeric and not it.children and not it.is_edited:
+            # signed / binary / packed receivers need GnuCOBOL's sign handling
+            if it.usage != "DISPLAY" or (it.picture is not None and it.picture.signed):
+                raise _GenUnsupported(f"INSPECT of signed or non-DISPLAY numeric item {s.target.name}")
+        target = self.ref(s.target)
+        pattern = self._inspect_operand(s.pattern)
+        if s.mode == "TALLYING":
+            c = s.counter
+            if c is None or not self.is_numeric_expr(c) or (c.item and self.index[c.item].is_constant):
+                raise _GenUnsupported("INSPECT TALLYING counter must be a numeric data item")
+            cnt = self.ref(c)
+            self.emit(ind, f"{cnt}.store({cnt}.value + rt.inspect_tally({target}, {pattern}))")
+        elif s.mode == "REPLACING":
+            self.emit(ind, f"rt.inspect_replace({target}, {pattern}, {self._inspect_operand(s.replacement)})")
+        else:
+            raise _GenUnsupported(f"INSPECT {s.mode}")
+
     def _st_unsupported(self, s: ir.Unsupported, ind: int) -> None:
         self._unsupported(s, ind, s.reason)
 

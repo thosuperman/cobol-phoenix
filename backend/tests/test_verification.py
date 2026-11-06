@@ -69,4 +69,23 @@ def test_premcalc_batch_matches_gnucobol(sample_parse, tmp_path):
     assert rep["cases"][0]["cobol"]["stdout"] == (SAMPLE / "fixtures" / "expected-output.txt").read_text()
 
 
+@pytest.mark.cobol
+def test_inspect_tallying_and_replacing_match_gnucobol(tmp_path):
+    from phoenix.cobol.project import parse_project
+    from phoenix.verify.testgen import TestCase
+    from tests.conftest import INSPECT_DEMO_SOURCE, INSPECT_DEMO_STDIN
+
+    (tmp_path / "jobs").mkdir()
+    pp = parse_project({"inspdemo.cob": INSPECT_DEMO_SOURCE})
+    gp = generate_project(pp, "INSPDEMO", "insp")
+    assert not gp.unsupported
+    write_project(gp, tmp_path / "p")
+    cases = [TestCase(id=k, kind="fixture", description=f"INSPECT on {v!r}", stdin=v) for k, v in INSPECT_DEMO_STDIN.items()]
+    rep = verify(pp, gp, tmp_path / "p", cases, DockerExecutor(RUNNER_IMAGE, tmp_path / "jobs"))
+    assert rep["compile"]["ok"], rep["compile"]["log"]
+    s = rep["summary"]
+    assert s["verified"] == s["total"] == len(cases), [(c["id"], c["diffs"], c["cobol"], c["python"]) for c in rep["cases"] if c["status"] != "VERIFIED"]
+    assert s["coverage_pct"] == 100.0
+
+
 del Path

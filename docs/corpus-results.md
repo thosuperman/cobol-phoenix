@@ -19,7 +19,7 @@ ledger repository is MIT. None of their Python bridges, generated code or AI fea
 |---|---|---|---|
 | Insurance | 6 | 0 | 0 |
 | Banking | 2 | 0 | 159 (WRITE 64, CLOSE 38, OPEN 37, READ 19, INSPECT 1) |
-| Ledger (`COBOL-BANKING/`) | 18 | 0 | 208 (OPEN 64, READ 39, CLOSE 38, WRITE 21, ACCEPT FROM COMMAND-LINE/ENVIRONMENT 20, UNSTRING 10, ALTER 5, INSPECT 3, GO TO DEPENDING 2, REPORT SECTION, INITIATE, TERMINATE, SD, SORT, RETURN) |
+| Ledger (`COBOL-BANKING/`) | 18 | 0 | 206 (OPEN 64, READ 39, CLOSE 38, WRITE 21, ACCEPT FROM COMMAND-LINE/ENVIRONMENT 20, UNSTRING 10, ALTER 5, INSPECT 1 (CONVERTING in `DISPUTE.cob`; the 6 `INSPECT … TALLYING … FOR ALL` in `RISKCHK.cob` are now parsed), GO TO DEPENDING 2, REPORT SECTION, INITIATE, TERMINATE, SD, SORT, RETURN) |
 
 Parser limitations surfaced by the corpus and fixed during development: READ … AT END / NOT AT END phrases
 inside inline PERFORMs, free-format auto-detection (tokens crossing column 72), `:TAG:` pseudo-text words,

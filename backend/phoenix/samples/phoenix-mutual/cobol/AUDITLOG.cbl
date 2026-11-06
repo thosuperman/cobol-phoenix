@@ -2,8 +2,8 @@
       * AUDITLOG - Appends rating results to the audit trail file.     *
       *                                                                *
       * Included to show how COBOL Phoenix reports constructs that are *
-      * outside the supported subset (file I/O, INSPECT). This program *
-      * is analysed and documented but not translated.                 *
+      * outside the supported subset (file I/O). INSPECT TALLYING is   *
+      * supported; the file I/O statements are reported unsupported.   *
       * Copyright 2026 COBOL Phoenix authors                           *
       * SPDX-License-Identifier: Apache-2.0                            *
       *================================================================*

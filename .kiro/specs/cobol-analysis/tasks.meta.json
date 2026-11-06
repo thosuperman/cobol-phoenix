@@ -1,0 +1,37 @@
+{
+  "pbtResults": {},
+  "executionHistory": {
+    "9. Support `INSPECT <field> TALLYING <counter> FOR ALL <literal>` and `INSPECT … REPLACING ALL <literal> BY <literal>`: parse into IR, translate in `program_gen.py`, add runtime helpers, unit tests and a GnuCOBOL differential test (sample `AUDITLOG` uses TALLYING). Update `docs/cobol-support.md`. (_Req 8, 9_)": [
+      {
+        "executionId": "73875f53-70dc-4823-b537-073648f81752",
+        "chatSessionId": "sess_fbc4b744-b979-4744-ba6e-7ca7ea301ef9",
+        "timestamp": 1793858150934
+      },
+      {
+        "executionId": "73875f53-70dc-4823-b537-073648f81752",
+        "chatSessionId": "sess_fbc4b744-b979-4744-ba6e-7ca7ea301ef9",
+        "timestamp": 1793858159845
+      },
+      {
+        "executionId": "63030429-9ce2-4838-9ebc-e8fedd838efe",
+        "chatSessionId": "sess_2ba675c3-0972-4e7b-b10b-ce040839ad7e",
+        "timestamp": 1793863535288
+      },
+      {
+        "executionId": "63030429-9ce2-4838-9ebc-e8fedd838efe",
+        "chatSessionId": "sess_2ba675c3-0972-4e7b-b10b-ce040839ad7e",
+        "timestamp": 1793863542770
+      },
+      {
+        "executionId": "6c28e415-1ede-4de9-adb9-fc8b1006fdb1",
+        "chatSessionId": "sess_3c4b237b-e4cc-447a-a5ba-f31926ba4af7",
+        "timestamp": 1793884402189
+      },
+      {
+        "executionId": "6c28e415-1ede-4de9-adb9-fc8b1006fdb1",
+        "chatSessionId": "sess_3c4b237b-e4cc-447a-a5ba-f31926ba4af7",
+        "timestamp": 1793889292531
+      }
+    ]
+  }
+}

@@ -5,6 +5,7 @@ Used by the Kiro `validate-generated-code` hook and `make validate-generated`.
 
 from __future__ import annotations
 
+import json
 import subprocess
 import sys
 from pathlib import Path
@@ -21,14 +22,27 @@ SAMPLE = ROOT / "backend" / "phoenix" / "samples" / "phoenix-mutual"
 def main(out: Path) -> int:
     raw = {str(p.relative_to(SAMPLE)): p.read_text() for p in SAMPLE.rglob("*") if p.suffix.lower() in SOURCE_EXTS}
     pp = parse_project(raw)
+    fixtures = json.loads((SAMPLE / "phoenix-fixtures.json").read_text())
     status = 0
     for entry in ("RATEENG", "PREMCALC"):
-        gp = generate_project(pp, entry, f"{entry.lower()}-service")
+        gp = generate_project(pp, entry, f"{entry.lower()}-service", fixtures=fixtures.get(entry, []))
         target = out / entry.lower()
         write_project(gp, target)
-        lint = subprocess.run([sys.executable, "-m", "ruff", "check", "--select", "F,E9", "app"], cwd=target, capture_output=True, text=True)
-        tests = subprocess.run([sys.executable, "-m", "pytest", "-q", "-p", "no:cacheprovider"], cwd=target, capture_output=True, text=True)
-        print(f"{entry}: {len(gp.traceability)} statements traced, unsupported={len(gp.unsupported)}, ruff={'ok' if lint.returncode == 0 else 'FAIL'}, tests={'ok' if tests.returncode == 0 else 'FAIL'}")
+        lint = subprocess.run(
+            [sys.executable, "-m", "ruff", "check", "--select", "F,E9", "app"],
+            cwd=target,
+            capture_output=True,
+            text=True,
+        )
+        tests = subprocess.run(
+            [sys.executable, "-m", "pytest", "-q", "-p", "no:cacheprovider"],
+            cwd=target,
+            capture_output=True,
+            text=True,
+        )
+        print(
+            f"{entry}: {len(gp.traceability)} statements traced, unsupported={len(gp.unsupported)}, ruff={'ok' if lint.returncode == 0 else 'FAIL'}, tests={'ok' if tests.returncode == 0 else 'FAIL'}"
+        )
         if lint.returncode or tests.returncode:
             print(lint.stdout, tests.stdout[-2000:], tests.stderr[-2000:])
             status = 1

@@ -100,3 +100,150 @@ def test_literals_are_escaped(tmp_path):
     out = json.loads(r.stdout)[0]
     assert out["status"] == "ok", out
     assert out["stdout"].startswith("IT'SA\"); __import__('os') #\\")
+
+
+def _run_main(project_dir, entry, stdin):
+    r = subprocess.run(
+        [sys.executable, "-m", "app.cli", "--entry", entry, "--mode", "main"],
+        input=json.dumps([{"id": "a", "stdin": stdin}]), cwd=project_dir, capture_output=True, text=True, timeout=60,
+    )  # fmt: skip
+    return json.loads(r.stdout)[0]
+
+
+def test_inspect_is_translated_and_generated_suite_passes(tmp_path):
+    from tests.conftest import INSPECT_DEMO_SOURCE
+
+    pp = parse_project({"inspdemo.cob": INSPECT_DEMO_SOURCE})
+    gp = generate_project(pp, "INSPDEMO", "insp")
+    assert not gp.unsupported
+    src = gp.files["app/programs/inspdemo.py"]
+    assert "rt.inspect_tally(" in src and "rt.inspect_replace(" in src and "float(" not in src
+    # TALLYING adds to the counter, it never overwrites it
+    assert "self.ws_spaces.store(self.ws_spaces.value + rt.inspect_tally(" in src
+    write_project(gp, tmp_path)
+    out = _run_main(tmp_path, "INSPDEMO", "ABAB  AB\n")
+    assert out["status"] == "ok", out
+    assert out["stdout"] == 'SPACES=019 AB=006 A=3\nTEXT="Y"Y**XY************\nCODE=19293\n'
+    r = subprocess.run([sys.executable, "-m", "pytest", "-q", "-p", "no:cacheprovider"], cwd=tmp_path, capture_output=True, text=True, timeout=180)
+    assert r.returncode == 0, r.stdout + r.stderr
+
+
+def test_unsupported_inspect_forms_raise_unsupported_construct(tmp_path):
+    src = """       IDENTIFICATION DIVISION.
+       PROGRAM-ID. INSPBAD.
+       DATA DIVISION.
+       WORKING-STORAGE SECTION.
+       01  T PIC X(5) VALUE "AAAAA".
+       01  S PIC S9(3) VALUE -12.
+       01  C PIC 9(3) VALUE 0.
+       PROCEDURE DIVISION.
+           INSPECT T TALLYING C FOR CHARACTERS BEFORE INITIAL "A"
+           INSPECT S TALLYING C FOR ALL "1"
+           DISPLAY C
+           STOP RUN.
+"""
+    pp = parse_project({"inspbad.cob": src})
+    gp = generate_project(pp, "INSPBAD", "bad")
+    lines = {u["line"] for u in gp.unsupported if u["construct"] == "INSPECT"}
+    assert lines == {9, 10}  # unsupported form (parser) and signed numeric target (generator)
+    py = gp.files["app/programs/inspbad.py"]
+    assert py.count("raise rt.UnsupportedConstruct('INSPECT'") == 2
+    write_project(gp, tmp_path)
+    out = _run_main(tmp_path, "INSPBAD", "")
+    assert out["status"] == "unsupported", out
+
+
+# ------------------------------------------------- OpenAPI request examples (task 7)
+
+
+def _sample_fixtures(entry):
+    from tests.conftest import SAMPLE
+
+    return json.loads((SAMPLE / "phoenix-fixtures.json").read_text())[entry]
+
+
+def test_request_examples_come_from_fixtures(sample_parse):
+    fixtures = _sample_fixtures("RATEENG")
+    gp = generate_project(sample_parse, "RATEENG", "rate-svc", fixtures=fixtures)
+    schemas = gp.files["app/schemas.py"]
+    assert "json_schema_extra={'examples': REQUEST_EXAMPLES}" in schemas
+    # every fixture with PICTURE-valid inputs becomes an example, in fixture order
+    valid = [f["id"] for f in fixtures if f["id"] != "non-numeric-age"]
+    for fid in valid:
+        assert f"    {fid!r}," in schemas
+    assert "'non-numeric-age'" not in schemas
+    readme = gp.files["README.md"]
+    assert "| non-numeric-age | PR-DRIVER-AGE: 'raw:4A0' is not a decimal number |" in readme
+    assert "float" not in schemas
+
+
+def test_no_fixtures_means_no_examples(sample_parse):
+    gp = generate_project(sample_parse, "RATEENG", "rate-svc")
+    schemas = gp.files["app/schemas.py"]
+    assert "REQUEST_EXAMPLES: list[dict] = []" in schemas and "json_schema_extra" not in schemas
+    assert "pytest.mark.skip(reason=" in gp.files["tests/test_api.py"]
+
+
+def test_request_examples_are_deterministic(sample_parse):
+    fixtures = _sample_fixtures("RATEENG")
+    a = generate_project(sample_parse, "RATEENG", "rate-svc", fixtures=fixtures)
+    # reversing the key order inside each fixture must not change the output
+    shuffled = [{**f, "inputs": {r: dict(reversed(list(v.items()))) for r, v in f["inputs"].items()}} for f in fixtures]
+    b = generate_project(sample_parse, "RATEENG", "rate-svc", fixtures=shuffled)
+    assert a.files == b.files
+
+
+def test_generated_suite_posts_every_example(sample_parse, tmp_path):
+    for entry, expected in (("RATEENG", ["standard-ca-full", "max-vehicle-value"]), ("PREMCALC", ["nightly-batch"])):
+        gp = generate_project(sample_parse, entry, f"{entry.lower()}-svc", fixtures=_sample_fixtures(entry))
+        write_project(gp, tmp_path / entry)
+        r = subprocess.run(
+            [sys.executable, "-m", "pytest", "-v", "-p", "no:cacheprovider", "tests"],
+            cwd=tmp_path / entry, capture_output=True, text=True, timeout=180,
+        )  # fmt: skip
+        assert r.returncode == 0, r.stdout + r.stderr
+        assert "test_openapi_examples_match_fixtures PASSED" in r.stdout
+        for fid in expected:
+            assert f"test_execute_openapi_example[{fid}] PASSED" in r.stdout, r.stdout
+        assert "no-examples" not in r.stdout
+
+
+def _decimal_text():
+    from hypothesis import strategies as st
+
+    return st.builds(
+        lambda sign, lead, whole, frac: sign + "0" * lead + whole + (("." + frac) if frac is not None else ""),
+        st.sampled_from(["", "+", "-"]),
+        st.integers(0, 2),
+        st.text("0123456789", min_size=1, max_size=10),
+        st.none() | st.text("0123456789", min_size=1, max_size=5),
+    )
+
+
+def test_accepted_numeric_examples_pass_pydantic_validation():
+    """**Validates: Requirements 6** — an example value the generator accepts always passes
+    the Pydantic constraints it emits for the same PICTURE (max_digits, decimal_places, ge=0)."""
+    from decimal import Decimal
+
+    from hypothesis import given, settings
+    from hypothesis import strategies as st
+    from pydantic import Field, ValidationError, create_model
+
+    from phoenix.codegen.project_gen import InterfaceLeaf, _numeric_example
+
+    @settings(max_examples=300, derandomize=True, deadline=None)
+    @given(st.integers(1, 9), st.integers(0, 4), st.booleans(), _decimal_text())
+    def check(digits, scale, signed, text):
+        scale = min(scale, digits)
+        lf = InterfaceLeaf("X", "x", "x", "numeric", digits, digits, scale, signed, f"S9({digits})")
+        accepted, _why = _numeric_example(lf, text)
+        if accepted is None:
+            return
+        cons = {"max_digits": digits, "decimal_places": scale} | ({} if signed else {"ge": 0})
+        model = create_model("M", x=(Decimal, Field(default=Decimal(0), **cons)))
+        try:
+            model.model_validate({"x": accepted})
+        except ValidationError as exc:  # pragma: no cover - reported by Hypothesis
+            raise AssertionError(f"{accepted!r} accepted for {lf} but rejected by Pydantic: {exc}") from exc
+
+    check()

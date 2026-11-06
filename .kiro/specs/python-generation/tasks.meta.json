@@ -1,0 +1,22 @@
+{
+  "pbtResults": {},
+  "executionHistory": {
+    "7. Add request examples to the generated OpenAPI schema from the project fixtures (`json_schema_extra` examples in `schemas.py`), with a generated test that posts each example and asserts HTTP 200. (_Req 1, 6_)": [
+      {
+        "executionId": "dc609460-b211-45e3-8771-eed26f7b77ee",
+        "chatSessionId": "sess_8903d400-5c96-4a0b-be2d-b036f518464a",
+        "timestamp": 1793889879812
+      },
+      {
+        "executionId": "dc609460-b211-45e3-8771-eed26f7b77ee",
+        "chatSessionId": "sess_8903d400-5c96-4a0b-be2d-b036f518464a",
+        "timestamp": 1793889884086
+      },
+      {
+        "executionId": "8d1c1254-5ec2-4cba-a0cd-e1da31438a8f",
+        "chatSessionId": "sess_95b77ccc-31f6-443a-9c06-1c1bd5c2a824",
+        "timestamp": 1793932456898
+      }
+    ]
+  }
+}

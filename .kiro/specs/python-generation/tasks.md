@@ -8,4 +8,4 @@
 - [x] 6. Mutation operators (_Req 8_)
 
 ## Next (open)
-- [ ] 7. Add request examples to the generated OpenAPI schema from the project fixtures (`json_schema_extra` examples in `schemas.py`), with a generated test that posts each example and asserts HTTP 200. (_Req 1, 6_)
+- [x] 7. Add request examples to the generated OpenAPI schema from the project fixtures (`json_schema_extra` examples in `schemas.py`), with a generated test that posts each example and asserts HTTP 200. (_Req 1, 6_)
