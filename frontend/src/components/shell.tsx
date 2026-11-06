@@ -22,7 +22,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   const sidebar = (
     <nav className="flex h-full flex-col">
       <Link href="/" className="px-5 py-5">
-        <Wordmark />
+        <Wordmark id="phx-g-sidebar" />
       </Link>
       <div className="space-y-0.5 px-3">
         {NAV.map((n) => (
@@ -85,7 +85,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           <button onClick={() => setOpen(!open)} className="text-fog-300" aria-label="Toggle navigation">
             {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
           </button>
-          <Wordmark />
+          <Wordmark id="phx-g-header" />
         </header>
         <main className="mx-auto max-w-[1500px] px-4 py-6 sm:px-6 lg:px-8 lg:py-8">{children}</main>
       </div>

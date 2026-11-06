@@ -37,7 +37,7 @@ export default function Landing() {
       <div className="grid-bg pointer-events-none absolute inset-0 [mask-image:radial-gradient(ellipse_at_top,black_30%,transparent_75%)]" />
       <div className="pointer-events-none absolute -top-40 left-1/2 h-[520px] w-[900px] -translate-x-1/2 rounded-full bg-phoenix-600/15 blur-[120px]" />
       <header className="relative z-10 mx-auto flex max-w-6xl items-center justify-between px-6 py-6">
-        <Wordmark />
+        <Wordmark id="phx-g-landing" />
         <nav className="flex items-center gap-2 text-sm">
           <Link href="/import" className="hidden rounded-lg px-3 py-2 text-fog-300 hover:text-fog-50 sm:block">
             Import COBOL
@@ -92,7 +92,7 @@ export default function Landing() {
               {"_size_error = False\n_v = (((self.ws_base_rate.value * ...)\n"}
               <span className="text-fog-500">{"     # Decimal, 64-digit context\n"}</span>
               {"if not self.rr_base_premium.store(\n        _v, rounded=True, size_error=True):\n    _size_error = True\n"}
-              <span className="text-emerald-300">{"# ✓ 127/127 cases identical to GnuCOBOL"}</span>
+              <span className="text-emerald-300">{"# sample run: 127/127 cases identical to GnuCOBOL 3.2"}</span>
             </pre>
           </div>
         </div>
@@ -141,7 +141,7 @@ export default function Landing() {
       <footer className="relative z-10 border-t border-ink-700">
         <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3 px-6 py-6 text-xs text-fog-500">
           <span className="flex items-center gap-2">
-            <PhoenixMark className="h-5 w-5" /> COBOL Phoenix · Apache-2.0 · Built for Kiroween 2026
+            <PhoenixMark className="h-5 w-5" gradientId="phx-g-footer" /> COBOL Phoenix · Apache-2.0 · Built for Kiroween 2026
           </span>
           <span className="flex items-center gap-1.5">
             <Workflow className="h-3.5 w-3.5" /> COBOL → IR → Python → proof

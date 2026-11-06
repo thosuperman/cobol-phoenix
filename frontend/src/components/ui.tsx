@@ -10,7 +10,7 @@ export function cn(...parts: (string | false | null | undefined)[]) {
 
 export function Card({ className, children, ...rest }: ComponentProps<"div">) {
   return (
-    <div className={cn("rounded-xl border border-ink-600/70 bg-ink-850/80 backdrop-blur-sm", className)} {...rest}>
+    <div className={cn("min-w-0 rounded-xl border border-ink-600/70 bg-ink-850/80 backdrop-blur-sm", className)} {...rest}>
       {children}
     </div>
   );
@@ -18,7 +18,7 @@ export function Card({ className, children, ...rest }: ComponentProps<"div">) {
 
 export function CardHeader({ title, subtitle, icon, actions }: { title: ReactNode; subtitle?: ReactNode; icon?: ReactNode; actions?: ReactNode }) {
   return (
-    <div className="flex items-start justify-between gap-4 border-b border-ink-600/60 px-5 py-4">
+    <div className="flex flex-wrap items-start justify-between gap-x-4 gap-y-2 border-b border-ink-600/60 px-5 py-4">
       <div className="flex items-start gap-3">
         {icon && <div className="mt-0.5 text-phoenix-400">{icon}</div>}
         <div>
@@ -26,7 +26,7 @@ export function CardHeader({ title, subtitle, icon, actions }: { title: ReactNod
           {subtitle && <p className="mt-0.5 text-xs text-fog-400">{subtitle}</p>}
         </div>
       </div>
-      {actions && <div className="flex shrink-0 items-center gap-2">{actions}</div>}
+      {actions && <div className="flex max-w-full flex-wrap items-center gap-2">{actions}</div>}
     </div>
   );
 }
