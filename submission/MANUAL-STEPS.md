@@ -3,12 +3,13 @@
 Deadline: **4 December 2026, 2:00 pm Pacific Time** (no extensions). Judging runs 16 Dec 2026 – 29 Jan 2027, so the
 application URL must stay up until then. Source: https://kiroween.devpost.com/rules (checked 6 Nov 2026).
 
-## 1. Push the latest commits (needs your OK)
-Local commits are ahead of `origin/main`. Review `git log origin/main..main`, then `git push`.
+## 1. Repository visibility and latest commits
+The repository is private for now. The rules require a **public** repository with the licence visible, so make it
+public before you submit, and push any local commits (`git log origin/main..main`).
 
 ## 2. Application URL — DONE
-Live at https://cobol-phoenix.kiriwake.jp (AWS Lightsail `small_3_0`, USD 12/month, **ap-southeast-1 / Singapore**, static IP 18.143.208.222,
-Route 53 A record in `kiriwake.jp`, HTTPS via Caddy/Let's Encrypt). Keep it running until judging ends
+Live at https://cobol.beauty (AWS Lightsail `small_3_0`, USD 12/month, **ap-southeast-1 / Singapore**, static IP 18.143.208.222,
+Route 53 A records for `cobol.beauty` and `www.cobol.beauty`, HTTPS via Caddy/Let's Encrypt; `www` and the earlier `cobol-phoenix.kiriwake.jp` redirect to `cobol.beauty`). Keep it running until judging ends
 (29 Jan 2027). Singapore was chosen because the ProxyGrid `cleanupOrphans` Lambda deletes unknown Lightsail
 instances in Tokyo and Seoul. Visitors can delete projects; re-seed with *Import sample* if needed.
 SSH: `ssh -i ~/.ssh/cobol-phoenix-lightsail ubuntu@18.143.208.222`. Update: copy or pull the code into

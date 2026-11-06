@@ -47,7 +47,7 @@ File I/O adapters (sequential/indexed files mapped to repositories), CICS/SQL bo
 Created from an empty repository during the submission period. Most of the initial implementation was written outside the Kiro IDE following the Kiro specs; Kiro IDE was then used for the spec tasks above. No pre-existing code is included. Third-party COBOL repositories are fetched only as test inputs at pinned commits and are not redistributed; the bundled sample is original.
 
 ## Try it
-- Live app: https://cobol-phoenix.kiriwake.jp (no login; the Phoenix Mutual sample and the external insurance repository are pre-loaded with verification runs; *Import sample* creates a fresh copy)
+- Live app: https://cobol.beauty (no login; the Phoenix Mutual sample and the external insurance repository are pre-loaded with verification runs; *Import sample* creates a fresh copy)
 - Code: https://github.com/thosuperman/cobol-phoenix (Apache-2.0) · `docker compose up --build`
 - Testing instructions: see the Testing Instructions field.
 

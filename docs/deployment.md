@@ -57,7 +57,7 @@ Lightsail small_3_0 in ap-southeast-1 (2 vCPU, 2 GB RAM, 60 GB SSD, Ubuntu 24.04
    apt-get update -y && apt-get install -y docker.io docker-compose-v2 docker-buildx git
    git clone https://github.com/thosuperman/cobol-phoenix.git /opt/cobol-phoenix
    ```
-4. `cp deploy/lightsail.env.example .env`, set `PHOENIX_DOMAIN` / `PHOENIX_CORS_ORIGINS`, then:
+4. `cp deploy/lightsail.env.example .env`, set `PHOENIX_DOMAIN`, `PHOENIX_REDIRECT_DOMAINS` (hostnames that redirect to the primary) and `PHOENIX_CORS_ORIGINS`, then:
    ```bash
    docker compose -f docker-compose.yml -f deploy/docker-compose.prod.yml up -d --build
    ```

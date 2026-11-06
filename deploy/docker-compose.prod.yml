@@ -8,6 +8,7 @@ services:
     restart: unless-stopped
     environment:
       PHOENIX_DOMAIN: ${PHOENIX_DOMAIN:?set PHOENIX_DOMAIN}
+      PHOENIX_REDIRECT_DOMAINS: ${PHOENIX_REDIRECT_DOMAINS:?set PHOENIX_REDIRECT_DOMAINS (e.g. www.example.com)}
     volumes:
       - ./deploy/Caddyfile:/etc/caddy/Caddyfile:ro
       - caddy-data:/data

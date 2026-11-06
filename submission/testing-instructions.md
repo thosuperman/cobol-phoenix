@@ -1,7 +1,7 @@
 # Testing instructions for judges
 
 ## Fastest path (hosted)
-Open https://cobol-phoenix.kiriwake.jp — no login. The dashboard already contains the sample project and the external insurance repository with completed verification runs. To try the workflow yourself: **Import sample** → **Generate** → **Verify**, then **Inject a deliberate fault** as described below.
+Open https://cobol.beauty — no login. The dashboard already contains the sample project and the external insurance repository with completed verification runs. To try the workflow yourself: **Import sample** → **Generate** → **Verify**, then **Inject a deliberate fault** as described below.
 
 ## Run it yourself (Docker only)
 ```bash

@@ -9,3 +9,8 @@
 	}
 	reverse_proxy 127.0.0.1:3000
 }
+
+# Secondary hostnames (comma separated) permanently redirect to the primary domain.
+{$PHOENIX_REDIRECT_DOMAINS} {
+	redir https://{$PHOENIX_DOMAIN}{uri} permanent
+}
