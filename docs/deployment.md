@@ -43,14 +43,14 @@ port mapping can be removed in production; the frontend reaches it on the intern
 
 ```
 Route 53  cobol-phoenix.<domain>  A ─► Lightsail static IP
-Lightsail small_3_0 (2 vCPU, 2 GB RAM, 60 GB SSD, Ubuntu 24.04), firewall 22/80/443 only
+Lightsail small_3_0 in ap-southeast-1 (2 vCPU, 2 GB RAM, 60 GB SSD, Ubuntu 24.04), firewall 22/80/443 only
   └─ docker compose: caddy (HTTPS, Let's Encrypt) ─► frontend:3000 (localhost only) ─► backend:8000 (localhost only)
                      runner (network none, read-only, no capabilities)
 ```
 
 1. Create the instance (Ubuntu 24.04, `small_3_0`), allocate and attach a static IP, open ports 22, 80, 443 only.
 2. Create an A record for the hostname pointing at the static IP.
-3. On the instance (as root, with **bash** — Lightsail runs launch scripts with `sh`, so run this over SSH instead):
+3. On the instance as root (if you pass this as Lightsail launch script, keep it POSIX `sh` — Lightsail does not honour a bash shebang):
    ```bash
    fallocate -l 2G /swapfile && chmod 600 /swapfile && mkswap /swapfile && swapon /swapfile
    echo '/swapfile none swap sw 0 0' >> /etc/fstab

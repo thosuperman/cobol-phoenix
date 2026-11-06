@@ -3,6 +3,7 @@
 <h1 align="center">COBOL Phoenix</h1>
 <p align="center"><b>From Mainframe to Modern. Preserve the Logic. Rebuild the Future.</b></p>
 <p align="center">Evidence-backed COBOL → Python modernization, proven by differential testing against GnuCOBOL.</p>
+<p align="center"><b>Live demo:</b> <a href="https://cobol-phoenix.kiriwake.jp">cobol-phoenix.kiriwake.jp</a></p>
 
 ---
 

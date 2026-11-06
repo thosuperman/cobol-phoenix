@@ -6,18 +6,13 @@ application URL must stay up until then. Source: https://kiroween.devpost.com/ru
 ## 1. Push the latest commits (needs your OK)
 Local commits are ahead of `origin/main`. Review `git log origin/main..main`, then `git push`.
 
-## 2. Application URL — required by the rules
-The rules require "a URL to your functional application(s)". Nothing is deployed yet.
-
-Recommended: one small EC2 instance running `docker compose` (the sandbox needs Docker with `network_mode: none`,
-which typical PaaS hosts do not offer). Steps: `docs/deployment.md` → *Optional AWS architecture*; user data script
-`scripts/aws/ec2-user-data.sh` (repository URL already filled in). Use **t3.small or larger** (compiling COBOL needs
-memory). Expected cost: one small instance + 30 GB disk for ~3 months — check current AWS pricing. Keep it running
-through 29 Jan 2027. After it is up, verify `https://<host>/api/health` shows the executor `available: true`, import
-the sample once, then put the URL in Devpost and `submission/devpost-description.md` (*Try it*).
-
-The app has no login; anyone with the URL can import code (it only runs in the sandbox). If you prefer, put it behind
-HTTP basic auth on the reverse proxy and add the credentials to Devpost's private testing field.
+## 2. Application URL — DONE
+Live at https://cobol-phoenix.kiriwake.jp (AWS Lightsail `small_3_0`, USD 12/month, **ap-southeast-1 / Singapore**, static IP 18.143.208.222,
+Route 53 A record in `kiriwake.jp`, HTTPS via Caddy/Let's Encrypt). Keep it running until judging ends
+(29 Jan 2027). Singapore was chosen because the ProxyGrid `cleanupOrphans` Lambda deletes unknown Lightsail
+instances in Tokyo and Seoul. Visitors can delete projects; re-seed with *Import sample* if needed.
+SSH: `ssh -i ~/.ssh/cobol-phoenix-lightsail ubuntu@18.143.208.222`. Update: copy or pull the code into
+`/opt/cobol-phoenix`, then `sudo docker compose -f docker-compose.yml -f deploy/docker-compose.prod.yml up -d --build`.
 
 ## 3. Upload the demo video (YouTube, public)
 - File: `submission/video/cobol-phoenix-demo.mp4` (< 3 min), subtitles `submission/video/cobol-phoenix-demo.srt`.
