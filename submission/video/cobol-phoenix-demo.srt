@@ -1,59 +1,59 @@
 1
-00:00:00,759 --> 00:00:06,727
+00:00:00,746 --> 00:00:06,714
 Billions in insurance and banking still run on COBOL. Rewriting it is easy. Proving
 
 2
-00:00:06,727 --> 00:00:12,695
+00:00:06,714 --> 00:00:12,682
 the rewrite behaves exactly the same is the hard part. This is COBOL Phoenix.
 
 3
-00:00:13,676 --> 00:00:22,825
+00:00:13,633 --> 00:00:22,782
 We import an insurance rating system. It is parsed deterministically, with no AI guessing: three programs, three copybooks, twenty
 
 4
-00:00:22,825 --> 00:00:31,975
+00:00:22,782 --> 00:00:31,932
 seven business rules, and three file input output statements we do not translate, each reported with its exact line.
 
 5
-00:00:32,876 --> 00:00:38,996
+00:00:32,832 --> 00:00:38,952
 Every dependency points to real source. Here is the base premium rule: its
 
 6
-00:00:38,996 --> 00:00:45,115
+00:00:38,952 --> 00:00:45,071
 inputs, its outputs, and the compute rounded statement, cited to the original lines.
 
 7
-00:00:46,016 --> 00:00:52,431
+00:00:45,972 --> 00:00:52,387
 One click generates a FastAPI service, with decimal arithmetic and schemas derived from the
 
 8
-00:00:52,431 --> 00:00:58,846
+00:00:52,387 --> 00:00:58,802
 COBOL picture clauses. Every Python statement maps back to the COBOL line it came from.
 
 9
-00:00:59,753 --> 00:01:13,175
-Now the proof. The original program runs in a sandboxed GnuCOBOL container with no network, and the generated Python runs beside it. Fixtures, boundary values derived from the code,
+00:00:59,705 --> 00:01:13,771
+Now the proof. The original program runs in a sandboxed GnuCOBOL container with no network, and the generated Python runs beside it. Fixtures, boundary values derived from the code, edge
 
 10
-00:01:13,175 --> 00:01:26,597
-edge cases and random records. One hundred twenty seven of one hundred twenty seven cases are identical, and mutation analysis shows the tests catch every fault that changes behaviour.
+00:01:13,771 --> 00:01:27,838
+cases and random records. One hundred twenty seven of one hundred twenty seven cases are identical. Then mutation analysis tests the tests, and lists every injected fault they would miss.
 
 11
-00:01:32,338 --> 00:01:38,991
+00:01:28,738 --> 00:01:35,391
 Does the verifier actually catch mistakes? We inject one tiny fault: a missing rounded.
 
 12
-00:01:38,991 --> 00:01:45,645
+00:01:35,391 --> 00:01:42,045
 Eight cases fail, down to the cent, with the exact field and its copybook line.
 
 13
-00:01:46,546 --> 00:01:55,272
+00:01:42,946 --> 00:01:51,672
 And it is not just our sample. On an independent public insurance repository, the generated underwriting service matches GnuCOBOL
 
 14
-00:01:55,272 --> 00:02:03,998
+00:01:51,672 --> 00:02:00,398
 on one hundred eighty of one hundred eighty cases. Mutation analysis even exposed a business rule that can never fire.
 
 15
-00:02:04,899 --> 00:02:13,808
+00:02:01,302 --> 00:02:10,211
 Evidence for every rule. Proof for every build. COBOL Phoenix. Preserve the logic, rebuild the future.

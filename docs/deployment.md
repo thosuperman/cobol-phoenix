@@ -1,7 +1,7 @@
 # Deployment
 
-> Status: deployment configuration is complete and `docker compose up --build` was run locally (see
-> CHANGELOG). **No public cloud deployment has been performed** — it requires the owner's cloud account.
+> Status: the Kiroween demo runs on an AWS Lightsail instance (see *Lightsail* below). The same Compose files run
+> locally with `docker compose up --build`.
 
 ## Single host with Docker Compose (recommended)
 
@@ -38,6 +38,33 @@ alembic revision --autogenerate -m "describe"      # after model changes
 
 Expose only the frontend (`PHOENIX_WEB_PORT`) behind a TLS-terminating proxy (Caddy, nginx, ALB). The backend
 port mapping can be removed in production; the frontend reaches it on the internal network.
+
+## AWS Lightsail (used for the hosted demo)
+
+```
+Route 53  cobol-phoenix.<domain>  A ─► Lightsail static IP
+Lightsail small_3_0 (2 vCPU, 2 GB RAM, 60 GB SSD, Ubuntu 24.04), firewall 22/80/443 only
+  └─ docker compose: caddy (HTTPS, Let's Encrypt) ─► frontend:3000 (localhost only) ─► backend:8000 (localhost only)
+                     runner (network none, read-only, no capabilities)
+```
+
+1. Create the instance (Ubuntu 24.04, `small_3_0`), allocate and attach a static IP, open ports 22, 80, 443 only.
+2. Create an A record for the hostname pointing at the static IP.
+3. On the instance (as root, with **bash** — Lightsail runs launch scripts with `sh`, so run this over SSH instead):
+   ```bash
+   fallocate -l 2G /swapfile && chmod 600 /swapfile && mkswap /swapfile && swapon /swapfile
+   echo '/swapfile none swap sw 0 0' >> /etc/fstab
+   apt-get update -y && apt-get install -y docker.io docker-compose-v2 docker-buildx git
+   git clone https://github.com/thosuperman/cobol-phoenix.git /opt/cobol-phoenix
+   ```
+4. `cp deploy/lightsail.env.example .env`, set `PHOENIX_DOMAIN` / `PHOENIX_CORS_ORIGINS`, then:
+   ```bash
+   docker compose -f docker-compose.yml -f deploy/docker-compose.prod.yml up -d --build
+   ```
+5. Verify `https://<host>/api/health` reports the executor `queue` as available.
+
+Update: `git pull && docker compose -f docker-compose.yml -f deploy/docker-compose.prod.yml up -d --build`.
+Cost: the instance bundle price (USD 12/month at the time of writing) plus nothing else for this setup.
 
 ## Optional AWS architecture (cost-conscious)
 

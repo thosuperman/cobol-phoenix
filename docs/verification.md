@@ -38,16 +38,24 @@ equivalent mutants (e.g. ROUNDED on an exact sum). The same mechanism powers the
 
 | Target | Cases | Result | Statement coverage | Mutation score |
 |---|---|---|---|---|
-| Sample `RATEENG` | 127 | 127 VERIFIED | 95.0% | 33/36 (3 equivalent survivors) |
+| Sample `RATEENG` | 127 | 127 VERIFIED | 95.0% | 30/36 (4 equivalent survivors, 2 untested boundaries) |
 | Sample `PREMCALC` (batch, `fixtures/policies.txt`) | 1 | VERIFIED; output equals `expected-output.txt` | 92.0% | — |
 | Sample `RATEENG` with injected fault (drop ROUNDED on RR-BASE-PREMIUM) | 127 | 119 VERIFIED, **8 FAILED** | 95.0% | — |
-| Corpus `NBUW001` (mudasin1/COBOL_Sample_March_2026) | 180 | 180 VERIFIED | 96.3% | 35/43 |
+| Corpus `NBUW001` (mudasin1/COBOL_Sample_March_2026) | 180 | 180 VERIFIED | 96.3% | 36/43 |
 | Corpus drivers DRIVENBUW / DRIVESVC / DRIVECLM | 3 | Python output equals upstream golden files | — | — |
 
 The claim generated for every report: *“N of M cases produced identical outputs … This is evidence for these
 inputs only, not a proof of equivalence for all inputs.”*
 
-## Bugs found by differential testing during development
+## Bugs found during development
+
+* Mutation analysis reused stale bytecode: mutants were run one after another in one workspace with
+  `python -E` (which ignores `PYTHONDONTWRITEBYTECODE`); two equal-size mutants written within the same second
+  could execute the previous mutant's cached `.pyc`, making scores timing-dependent (sample RATEENG showed 33/36
+  locally and 30/36 on the slower server). Fixed with `python -B` and a cache-free workspace copy; regression test
+  `test_mutants_evaluated_in_sequence_match_isolated_runs`. Correct scores: RATEENG 30/36, NBUW001 36/43.
+
+### Found by differential testing
 
 * Floating-insertion editing (`$$$,$$9.99`) when high-order digits are truncated: GnuCOBOL prints `$04,059.41`
   for 104,059.41; the first runtime version printed ` $4,059.41`. Found by an edge case (maximum vehicle value),

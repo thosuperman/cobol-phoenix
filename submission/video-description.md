@@ -10,9 +10,9 @@ In this demo:
 0:32 Dependency graph and evidence-backed business rules
 0:45 Generate a FastAPI service with traceability
 0:59 Differential verification against GnuCOBOL (127/127)
-1:31 Injecting a fault — and catching it
-1:46 An independent public insurance repository (180/180)
-2:04 Reports
+1:28 Injecting a fault — and catching it
+1:42 An independent public insurance repository (180/180)
+2:00 Reports
 
 Source code (Apache-2.0): https://github.com/thosuperman/cobol-phoenix
 Built with Kiro, Python, FastAPI, GnuCOBOL, Next.js.

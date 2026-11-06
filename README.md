@@ -73,7 +73,7 @@ Details: [docs/architecture.md](docs/architecture.md).
 
 ## 6. Demo video
 
-Video file: [submission/video/cobol-phoenix-demo.mp4](submission/video/cobol-phoenix-demo.mp4) (2:16, recorded from the running app). YouTube link: _to be added after upload_. Script: [submission/demo-script.md](submission/demo-script.md).
+Video file: [submission/video/cobol-phoenix-demo.mp4](submission/video/cobol-phoenix-demo.mp4) (2:13, recorded from the running app). YouTube link: _to be added after upload_. Script: [submission/demo-script.md](submission/demo-script.md).
 
 ## 7. Quick start (local development)
 
@@ -109,7 +109,7 @@ minimum premium, installments). `AUDITLOG` uses file I/O on purpose to show unsu
 1. **Import sample** — 3 programs, 3 copybooks, 27 rules, 3 unsupported constructs (all file I/O in `AUDITLOG`).
 2. **Business rules** — e.g. `PM-404 Base Premium`, cited to `cobol/RATEENG.cbl:197-205`, with its COMPUTE ROUNDED and ON SIZE ERROR.
 3. **Generate** `RATEENG` — typed endpoint `POST /api/v1/rateeng/execute`, 120 COBOL statements traced.
-4. **Verify** — 127/127 cases identical in GnuCOBOL 3.2.0 and Python; 95.0% statement coverage; mutation analysis 33/36 killed (the 3 survivors are equivalent mutants).
+4. **Verify** — 127/127 cases identical in GnuCOBOL 3.2.0 and Python; 95.0% statement coverage; mutation analysis 30/36 killed (4 survivors are equivalent mutants; 2 expose untested boundaries — driver age 99 and 21).
 5. **Inject a fault** (drop ROUNDED on `RR-BASE-PREMIUM`) — the verifier reports 8 FAILED cases, e.g. `RR-BASE-PREMIUM` 4862.05 (COBOL) vs 4862.04 (Python).
 
 The sample also preserves a real legacy quirk: a `$$$,$$9.99` field silently truncates `139,618.74` to
@@ -122,7 +122,7 @@ committed — see [corpus/manifest.json](corpus/manifest.json) and [docs/corpus-
 
 | Repository | Result |
 |---|---|
-| [mudasin1/COBOL_Sample_March_2026](https://github.com/mudasin1/COBOL_Sample_March_2026) (term life insurance) | 6 programs, 0 parse errors. Generated Python for all three upstream drivers reproduces the upstream golden files byte-for-byte. `NBUW001` (eligibility & premium): **180/180** differential cases identical to GnuCOBOL, 96.3% statement coverage, mutation score 81.4% (35/43). |
+| [mudasin1/COBOL_Sample_March_2026](https://github.com/mudasin1/COBOL_Sample_March_2026) (term life insurance) | 6 programs, 0 parse errors. Generated Python for all three upstream drivers reproduces the upstream golden files byte-for-byte. `NBUW001` (eligibility & premium): **180/180** differential cases identical to GnuCOBOL, 96.3% statement coverage, mutation score 83.7% (36/43). |
 | [achalc/cobol-bank-demo](https://github.com/achalc/cobol-bank-demo) (banking) | 2 programs, 0 parse errors, 159 unsupported constructs (file I/O, INSPECT) reported with locations. |
 | [albertdobmeyer/cobol-legacy-ledger](https://github.com/albertdobmeyer/cobol-legacy-ledger) (free format, MIT) | 18 programs, 0 parse errors, free format auto-detected, 206 unsupported constructs (file I/O, ALTER, REPORT SECTION, SORT, …) reported. |
 
