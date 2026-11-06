@@ -65,7 +65,9 @@ def build_cobol_job(pp: ProjectParse, entry: str, mode: str, cases: list[TestCas
 # ---------------------------------------------------------------- Python side
 def run_python(project_dir: Path, entry: str, mode: str, cases: list[TestCase], trace: bool = True, fixed: str = FIXED_DATETIME) -> list[dict]:
     payload = json.dumps([{"id": c.id, "stdin": c.stdin} for c in cases])
-    cmd = [sys.executable, "-E", "-s", "-m", "app.cli", "--entry", entry, "--mode", mode, "--date", fixed]
+    # -B: never write or trust bytecode. Mutation analysis rewrites the same module many times
+    # within a second; a cached .pyc with matching size/mtime would otherwise run stale code.
+    cmd = [sys.executable, "-B", "-E", "-s", "-m", "app.cli", "--entry", entry, "--mode", mode, "--date", fixed]
     if trace:
         cmd.append("--trace")
     env = {"PATH": os.environ.get("PATH", "/usr/bin:/bin"), "PYTHONHASHSEED": "0", "PYTHONDONTWRITEBYTECODE": "1"}
@@ -332,7 +334,7 @@ def mutation_analysis(
     entry_mod = gp.modules[0]
     with tempfile.TemporaryDirectory(prefix="phx-mut-") as tmp:
         work = Path(tmp) / "proj"
-        shutil.copytree(project_dir, work)
+        shutil.copytree(project_dir, work, ignore=shutil.ignore_patterns("__pycache__", "*.pyc"))
         target = work / "app" / "programs" / f"{entry_mod.module}.py"
         for i, m in enumerate(selected, start=1):
             progress(f"mutant {i}/{len(selected)}: {m.id}")

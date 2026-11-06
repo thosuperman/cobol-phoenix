@@ -89,3 +89,29 @@ def test_inspect_tallying_and_replacing_match_gnucobol(tmp_path):
 
 
 del Path
+
+
+def test_mutants_evaluated_in_sequence_match_isolated_runs(sample_parse, tmp_path):
+    """Same-size mutants written within one second must not reuse stale bytecode."""
+    from phoenix.codegen.program_gen import mutation_candidates
+    from phoenix.verify import engine
+    from phoenix.verify.engine import mutation_analysis, run_python
+
+    gp = generate_project(sample_parse, "RATEENG", "r")
+    write_project(gp, tmp_path / "p")
+    cases = build_cases(sample_parse, "RATEENG", fixtures_for("RATEENG"), 220)
+    ref = {r["id"]: r["stdout"] for r in run_python(tmp_path / "p", "RATEENG", "harness", cases, trace=False)}
+    all_m = mutation_candidates(sample_parse.program("RATEENG").program)
+    picked = [m for m in all_m if m.id in ("relop@cobol/RATEENG.cbl:138#0", "relop@cobol/RATEENG.cbl:140#0", "relop@cobol/RATEENG.cbl:142#0")]
+    assert len(picked) == 3
+    original = engine.mutation_candidates
+    try:
+        engine.mutation_candidates = lambda prog: picked
+        together = {m["id"]: m["status"] for m in mutation_analysis(sample_parse, gp, tmp_path / "p", cases, ref)["mutants"]}
+        alone = {}
+        for m in picked:
+            engine.mutation_candidates = lambda prog, m=m: [m]
+            alone.update({x["id"]: x["status"] for x in mutation_analysis(sample_parse, gp, tmp_path / "p", cases, ref)["mutants"]})
+    finally:
+        engine.mutation_candidates = original
+    assert together == alone

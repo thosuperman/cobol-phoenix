@@ -3,6 +3,7 @@
 ### Added
 - `INSPECT … TALLYING counter FOR ALL literal` and `INSPECT … REPLACING ALL literal BY literal`: IR node, parser, data flow, generator and `phoenix_runtime.inspect_tally` / `inspect_replace`, with parser, runtime, codegen and GnuCOBOL differential tests. Other INSPECT forms are still reported as unsupported.
 ### Fixed
+- Mutation analysis could reuse stale bytecode between same-size mutants (timing-dependent scores); generated code now runs with `python -B` in a cache-free workspace.
 - Consecutive unsupported INSPECT statements are now reported one by one instead of being merged into the first.
 
 ## 1.0.0 — 2026-11-05 (Kiroween 2026 submission)
