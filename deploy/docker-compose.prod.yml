@@ -1,0 +1,20 @@
+# Production override: HTTPS via Caddy (automatic Let's Encrypt certificates).
+#   PHOENIX_DOMAIN=example.com docker compose -f docker-compose.yml -f deploy/docker-compose.prod.yml up -d --build
+# Set PHOENIX_WEB_PORT=127.0.0.1:3000 and PHOENIX_API_PORT=127.0.0.1:8000 so only Caddy is reachable publicly.
+services:
+  caddy:
+    image: caddy:2.8
+    network_mode: host
+    restart: unless-stopped
+    environment:
+      PHOENIX_DOMAIN: ${PHOENIX_DOMAIN:?set PHOENIX_DOMAIN}
+    volumes:
+      - ./deploy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+      - caddy-config:/config
+    depends_on:
+      - frontend
+
+volumes:
+  caddy-data:
+  caddy-config:
