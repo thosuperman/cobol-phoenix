@@ -35,18 +35,23 @@ development session they were run from the terminal:
 | Hook | Command | Result / issues caught |
 |---|---|---|
 | `run-tests.json` (PostFileSave on backend Python) | `make test-backend-fast` | regressions in lexer format detection and ZIP limit handling were caught and fixed before commit |
-| `run-tests.json` (PostTaskExec) | `make test` | full suite: 86 backend tests passing, frontend type-check + build |
+| `run-tests.json` (PostTaskExec) | `make test` | full suite (86 backend tests before the Kiro tasks, 100 after), frontend type-check + build |
 | `validate-generated-code.json` | `make validate-generated` | caught an unused `Decimal` import in generated batch-mode `schemas.py` (ruff F401) — fixed in the generator |
 | `check-formatting.json` | `make fmt-py`, `make lint-frontend` | formatting / type errors (e.g. a removed lucide brand icon) |
 | `security-check.json` (Stop) | `make security` | bandit B108 on the sandbox tmpfs path — reviewed, documented as a false positive (`# nosec B108` with reason) |
 
-## Still to do in the Kiro IDE (by the author, before submitting)
+## Kiro IDE sessions (5–6 Nov 2026)
 
-The hackathon asks for meaningful Kiro usage. The artifacts above are ready, but the following must be done and
-recorded **in Kiro** — then this section should be updated with what actually happened:
+Source: `.kiro/specs/*/tasks.meta.json` and Kiro's local session records for this workspace.
 
-- [ ] Open the repository in Kiro and confirm the steering files load (always / fileMatch inclusion).
-- [ ] Open each spec in the Specs panel; run at least one remaining or new task through Kiro's spec task execution.
-- [ ] Confirm the hooks appear in the Agent Hooks panel (v1 format) and trigger on save / task completion / stop.
-- [ ] Optionally add MCP servers in `.kiro/settings/mcp.json` if they help (none are configured today).
-- [ ] Record screenshots of the Kiro panels for the Devpost “How we used Kiro” section.
+| What | Evidence |
+|---|---|
+| Kiro IDE 1.2.56 opened on the repository; 7 chat sessions | Kiro session records |
+| Steering `product`, `architecture`, `security`, `testing` (always) included in sessions | `steering_inclusion` events |
+| `cobol-analysis` task 9 (INSPECT) executed 3 times across 3 sessions | `tasks.meta.json` |
+| `python-generation` task 7 (OpenAPI examples) executed 2 times across 2 sessions | `tasks.meta.json` |
+| Hook "Full test suite when a spec task completes" (`run-tests.json`, `PostTaskExec`) invoked 2×, status completed | `ContextualHookInvoked` events |
+| Hook "Security checks before the agent stops" (`security-check.json`, `Stop`) invoked 3× | hook events |
+| Result reviewed, full suite re-run (100 tests passing) and committed as `0fcc605` | git history |
+
+Not used: Kiro CLI / Web / Crew, custom agents, MCP, Kiro powers, Kiro's property-based testing feature.

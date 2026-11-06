@@ -33,7 +33,7 @@ ACCEPT FROM COMMAND-LINE/ENVIRONMENT reported as unsupported instead of parse er
 * Fixtures: `corpus/fixtures/nbuw001-fixtures.json` (12 scenarios written for this project from reading the
   source, including the upstream driver's golden case).
 * Differential run: 180/180 VERIFIED, 207/215 statements executed (96.3%), result codes 00, 02, 12–26 exercised.
-* Mutation analysis: 36/43 killed. Survivors: NB-303 lines 251–252 (unreachable — every plan caps the issue age
+* Mutation analysis (latest run): 35/43 killed. Survivors: NB-303 lines 251–252 (unreachable — every plan caps the issue age
   at ≤ 60, so “age > 60” can never be true after validation), line 365 and the ROUNDED on exact sums at 406/415
-  (equivalent mutants), 366/386 (rounding not yet exercised by any input).
+  (equivalent mutants), and ROUNDED at 366/386/434, whose rounding no current input exercises.
 * The generated Python of the three upstream drivers reproduces `tests/expected/*.out` byte-for-byte.

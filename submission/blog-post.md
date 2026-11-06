@@ -1,6 +1,8 @@
 # Resurrecting COBOL with receipts: how we built COBOL Phoenix
 
-*Draft for the Kiroween 2026 blog bonus — review before publishing.*
+*Draft — review, add your own experience, then publish on a third-party platform (dev.to, Medium, Hashnode…) by 4 Dec 2026, 2:00 pm PT.*
+
+**This post is written as part of the Kiroween 2026 hackathon.**
 
 Every legacy-modernization pitch promises to “convert your COBOL”. Converting is not the problem. The problem is the
 question every architect asks afterwards: **how do we know the new code behaves exactly like the old one?**
@@ -30,7 +32,7 @@ Test inputs come from fixtures plus values derived from the code itself: every c
 boundary values, every 88-level and EVALUATE WHEN yields matching and non-matching values. Then we got smarter:
 we trace the fixtures through the generated Python and attach each boundary value to a fixture that actually
 executes the statement it came from — *coverage-guided placement*. On a public insurance repository that raised the
-mutation score from 67% to 84% without a single hand-written test.
+mutation score from 67% to over 80% without a single hand-written test.
 
 ## The best bug was our own
 An edge case with the maximum vehicle value failed. GnuCOBOL printed `$04,059.41`; our runtime printed
@@ -46,13 +48,18 @@ rule's threshold. That is the kind of finding a modernization team actually need
 
 ## Spec-first with Kiro
 We started from an empty repository by writing Kiro steering documents (product principles, COBOL semantics,
-security, testing) and four specs with EARS requirements, designs and task lists, plus hooks that run the tests,
-validate generated code and run security checks. The steering file on COBOL semantics turned out to be the most
-valuable artifact: it was the checklist we tested the runtime against. *(Add your Kiro IDE experience here.)*
+security, testing), four specs with EARS requirements, designs and task lists, and hooks. The steering file on
+COBOL semantics turned out to be the most valuable artifact: it was the checklist we tested the runtime against.
+
+We then used Kiro IDE to execute spec tasks: support for `INSPECT … TALLYING / REPLACING`, and OpenAPI request
+examples generated from fixtures. Because a `PostTaskExec` hook runs the whole suite — including the differential
+tests against GnuCOBOL — every Kiro task had to keep the generated Python behaviourally identical to the original.
+Kiro even refused to guess GnuCOBOL's sign handling for INSPECT on signed numbers and reported those as
+unsupported instead, exactly as our steering asked. *(Add your own impressions of working with Kiro here.)*
 
 ## Results
 - Original sample: 127/127 cases identical to GnuCOBOL; injected fault caught (8 failing cases).
 - Independent insurance repository: 180/180 on the underwriting program; generated drivers reproduce upstream golden files.
-- Two more repositories: 20 programs parsed with zero errors; 367 unsupported constructs reported, not ignored.
+- Two more repositories: 20 programs parsed with zero errors; 365 unsupported constructs reported, not ignored.
 
 COBOL Phoenix is open source under Apache-2.0. Preserve the logic. Rebuild the future.

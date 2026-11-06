@@ -1,25 +1,30 @@
-# Submission checklist
+# Submission checklist (Kiroween 2026 rules, checked 6 Nov 2026)
 
-## Product (verified in this session)
-- [x] Starts locally (`make dev-*`) and with `docker compose up --build` (stack healthy; 127/127 run through the sidecar)
-- [x] Sample project import, analysis, unsupported constructs reported
-- [x] Dependency graph, business rules with real source references
-- [x] Python/FastAPI generation; generated project runs and passes its own tests; ZIP download
-- [x] Original COBOL executed in an isolated GnuCOBOL environment (no network confirmed)
-- [x] Differential tests compare actual COBOL and Python outputs; injected fault detected
-- [x] Real external repositories: insurance (180/180 NBUW001, golden files reproduced), banking, ledger
-- [x] Automated tests pass (86 backend, frontend build, e2e)
-- [x] `.kiro/` committed (steering, specs, hooks); Apache-2.0 LICENSE; README and docs
-- [x] Screenshots in `assets/screenshots/`; logo and diagram in `assets/`
-- [x] No secrets committed (`make security`)
-- [x] No deployment claims (cloud deployment not performed)
+| Requirement | Status | Evidence / action |
+|---|---|---|
+| Project created during the submission period (from 30 Oct 2026) | DONE | first commit 5 Nov 2026, empty repository |
+| Working software built using Kiro | DONE (strengthen recommended) | Kiro IDE spec tasks, hooks and steering — `submission/kiro-usage.md`; see MANUAL-STEPS §5 |
+| Category identified | NEEDS MY ACTION | select **Resurrection** in the Devpost form |
+| URL to the functional application | NEEDS MY ACTION | deploy (`docs/deployment.md`, MANUAL-STEPS §2) |
+| Text description of features and functionality | DONE | `submission/devpost-description.md` (add the app URL) |
+| Demo video < 3 min, shows the project running | DONE | `submission/video/cobol-phoenix-demo.mp4` |
+| Video public on YouTube, link in the form | NEEDS MY ACTION | upload (MANUAL-STEPS §3) |
+| No third-party trademarks / copyrighted music in the video | DONE | text-to-speech narration, no music, own UI |
+| Public GitHub repository | DONE | https://github.com/thosuperman/cobol-phoenix |
+| Open-source license detectable in About | DONE | Apache-2.0 detected by GitHub |
+| `/.kiro` at the root, not git-ignored | DONE | steering (6), specs (4 + task metadata), hooks (4) |
+| All source, assets and instructions to run it | DONE | README, `docker compose up --build`, Makefile |
+| Kiro usage write-up | DONE | `submission/kiro-usage.md` (factual, includes what was not used) |
+| Pre-existing code disclosed | DONE | disclosure section in the description and write-up |
+| Third-party code/data used with authorisation | DONE | external corpus fetched only for tests, not redistributed |
+| English materials | DONE | |
+| Latest commits pushed | NEEDS MY ACTION | `git push` after review |
+| Blog bonus | NEEDS MY ACTION (optional) | publish `submission/blog-post.md` |
+| Social Blitz bonus | NEEDS MY ACTION (optional) | post `submission/social-post.md` in your own words |
+| Startup / Student / Ghost of Kiroween Past / Kiro Crew bonuses | NOT APPLICABLE | unless you personally qualify |
 
-## Manual steps before submitting (author) — see MANUAL-STEPS.md
-- [ ] Use Kiro IDE on this repository as described in `docs/kiro-dev-log.md` and complete `kiro-usage.md`
-- [ ] Create the public GitHub repository and push (with `.kiro/`)
-- [x] Demo video recorded from the running app: `submission/video/cobol-phoenix-demo.mp4` (2:10) + `.srt`
-- [ ] Upload it to YouTube (public) and add the link to README and Devpost
-- [ ] Optional: deploy (see `docs/deployment.md`) and add the URL
-- [ ] Fill the Devpost form from `devpost-description.md`; add screenshots
-- [ ] Review and publish `blog-post.md` / `social-post.md` yourself (bonus prizes); verify the official Kiro handle
-- [ ] Confirm the hackathon's eligibility rules and category (Resurrection) on the official rules page
+## Verified in this session
+- Backend: 100 tests passing, none skipped (GnuCOBOL differential and external-corpus tests ran for real).
+- Generated projects: both sample services pass their own generated tests and ruff.
+- Frontend: type-check and production build pass; Playwright demo workflow passes; no horizontal overflow at 375 px / 768 px.
+- Docker Compose stack: healthy, verification through the sandbox sidecar, runner has no network.

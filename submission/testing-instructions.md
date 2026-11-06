@@ -18,7 +18,7 @@ Optional — external repository: **Import → GitHub repository → first prese
 ```bash
 make setup             # Python 3.13 venv, npm deps, GnuCOBOL runner image
 make corpus            # optional: fetch external repositories at pinned commits
-make test-backend      # 86 tests; GnuCOBOL tests skip with a reason if the runner image is missing
+make test-backend      # 100 tests; GnuCOBOL tests skip with a reason if the runner image is missing
 make test-frontend     # tsc + next build
 make validate-generated
 make dev-backend & make dev-frontend & make e2e   # Playwright demo workflow

@@ -73,7 +73,7 @@ Details: [docs/architecture.md](docs/architecture.md).
 
 ## 6. Demo video
 
-Video file: [submission/video/cobol-phoenix-demo.mp4](submission/video/cobol-phoenix-demo.mp4) (2:10, recorded from the running app). YouTube link: _to be added after upload_. Script: [submission/demo-script.md](submission/demo-script.md).
+Video file: [submission/video/cobol-phoenix-demo.mp4](submission/video/cobol-phoenix-demo.mp4) (2:16, recorded from the running app). YouTube link: _to be added after upload_. Script: [submission/demo-script.md](submission/demo-script.md).
 
 ## 7. Quick start (local development)
 
@@ -122,7 +122,7 @@ committed — see [corpus/manifest.json](corpus/manifest.json) and [docs/corpus-
 
 | Repository | Result |
 |---|---|
-| [mudasin1/COBOL_Sample_March_2026](https://github.com/mudasin1/COBOL_Sample_March_2026) (term life insurance) | 6 programs, 0 parse errors. Generated Python for all three upstream drivers reproduces the upstream golden files byte-for-byte. `NBUW001` (eligibility & premium): **180/180** differential cases identical to GnuCOBOL, 96.3% statement coverage, mutation score 83.7%. |
+| [mudasin1/COBOL_Sample_March_2026](https://github.com/mudasin1/COBOL_Sample_March_2026) (term life insurance) | 6 programs, 0 parse errors. Generated Python for all three upstream drivers reproduces the upstream golden files byte-for-byte. `NBUW001` (eligibility & premium): **180/180** differential cases identical to GnuCOBOL, 96.3% statement coverage, mutation score 81.4% (35/43). |
 | [achalc/cobol-bank-demo](https://github.com/achalc/cobol-bank-demo) (banking) | 2 programs, 0 parse errors, 159 unsupported constructs (file I/O, INSPECT) reported with locations. |
 | [albertdobmeyer/cobol-legacy-ledger](https://github.com/albertdobmeyer/cobol-legacy-ledger) (free format, MIT) | 18 programs, 0 parse errors, free format auto-detected, 206 unsupported constructs (file I/O, ALTER, REPORT SECTION, SORT, …) reported. |
 
@@ -160,7 +160,7 @@ Full matrix and semantics: [docs/cobol-support.md](docs/cobol-support.md).
 ## 12. Testing
 
 ```bash
-make test-backend       # 86 pytest tests (parser, runtime + Hypothesis, codegen, API, security, GnuCOBOL differential, corpus)
+make test-backend       # 100 pytest tests (parser, runtime + Hypothesis, codegen, API, security, GnuCOBOL differential, corpus)
 make corpus             # fetch the external corpus at pinned commits (enables corpus tests)
 make test-frontend      # tsc + production build
 make validate-generated # regenerate sample services and run their own generated tests + ruff
@@ -183,8 +183,9 @@ restricted. Full model: [SECURITY.md](SECURITY.md).
 The repository contains the project’s Kiro configuration in [.kiro/](.kiro): steering documents (product,
 architecture, coding standards, COBOL semantics, testing, security), four specs (product, COBOL analysis, Python
 generation, differential verification) and v1 hooks (tests, generated-code validation, formatting, security).
-How they were used is recorded factually in [docs/kiro-dev-log.md](docs/kiro-dev-log.md) and
-[submission/kiro-usage.md](submission/kiro-usage.md).
+Kiro IDE executed spec tasks with these steering files and hooks (INSPECT support and OpenAPI request
+examples; the `PostTaskExec` hook ran the full test suite after each task). What was and was not done with Kiro is
+recorded factually in [submission/kiro-usage.md](submission/kiro-usage.md) and [docs/kiro-dev-log.md](docs/kiro-dev-log.md).
 
 ## 15. License
 

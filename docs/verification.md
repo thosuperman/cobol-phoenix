@@ -41,7 +41,7 @@ equivalent mutants (e.g. ROUNDED on an exact sum). The same mechanism powers the
 | Sample `RATEENG` | 127 | 127 VERIFIED | 95.0% | 33/36 (3 equivalent survivors) |
 | Sample `PREMCALC` (batch, `fixtures/policies.txt`) | 1 | VERIFIED; output equals `expected-output.txt` | 92.0% | — |
 | Sample `RATEENG` with injected fault (drop ROUNDED on RR-BASE-PREMIUM) | 127 | 119 VERIFIED, **8 FAILED** | 95.0% | — |
-| Corpus `NBUW001` (mudasin1/COBOL_Sample_March_2026) | 180 | 180 VERIFIED | 96.3% | 36/43 |
+| Corpus `NBUW001` (mudasin1/COBOL_Sample_March_2026) | 180 | 180 VERIFIED | 96.3% | 35/43 |
 | Corpus drivers DRIVENBUW / DRIVESVC / DRIVECLM | 3 | Python output equals upstream golden files | — | — |
 
 The claim generated for every report: *“N of M cases produced identical outputs … This is evidence for these
