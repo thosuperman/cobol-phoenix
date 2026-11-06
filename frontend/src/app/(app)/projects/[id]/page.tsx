@@ -25,7 +25,7 @@ export default function OverviewPage() {
         <StatTile label="Copybooks" value={o.copybooks} icon={<Boxes className="h-4 w-4" />} />
         <StatTile label="Source lines" value={o.source_lines.toLocaleString()} />
         <StatTile label="Dependencies" value={o.dependencies} hint={`${o.call_edges} CALL · ${o.copy_edges} COPY`} icon={<Link2 className="h-4 w-4" />} />
-        <StatTile label="Business rules" value={o.business_rules} accent icon={<GitBranch className="h-4 w-4" />} />
+        <StatTile label="Rules" value={o.business_rules} accent icon={<GitBranch className="h-4 w-4" />} />
         <StatTile label="Unsupported" value={o.unsupported_constructs} hint="reported, never ignored" icon={<Ban className="h-4 w-4" />} />
         <StatTile label="Complexity" value={<span className={bandTone(o.complexity_band)}>{o.complexity_band}</span>} hint={`score ${o.complexity_score}`} icon={<Gauge className="h-4 w-4" />} />
       </div>

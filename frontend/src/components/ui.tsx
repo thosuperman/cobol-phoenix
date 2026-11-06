@@ -81,7 +81,7 @@ export function Badge({ children, tone = "neutral", className }: { children: Rea
 export function StatTile({ label, value, hint, icon, accent }: { label: string; value: ReactNode; hint?: ReactNode; icon?: ReactNode; accent?: boolean }) {
   return (
     <Card className={cn("relative overflow-hidden px-4 py-3.5", accent && "glow-phoenix")}>
-      <div className="flex items-center justify-between gap-2 text-[11px] uppercase tracking-wider text-fog-400">
+      <div className="flex items-center justify-between gap-1.5 text-[10.5px] uppercase tracking-wide text-fog-400">
         <span className="truncate">{label}</span>
         {icon && <span className="shrink-0 text-fog-500">{icon}</span>}
       </div>
