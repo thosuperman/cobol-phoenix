@@ -1,0 +1,37 @@
+<!doctype html><html><head><meta charset="utf-8"><style>
+*{box-sizing:border-box;margin:0}
+body{width:1200px;height:800px;overflow:hidden;background:#0b0d11;font-family:-apple-system,"SF Pro Display","Helvetica Neue",Arial,sans-serif;color:#f2f4f8;position:relative}
+.glow{position:absolute;left:-200px;bottom:-300px;width:900px;height:900px;background:radial-gradient(circle,rgba(255,122,31,.35),rgba(226,72,43,.12) 45%,transparent 70%)}
+.grid{position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,.035) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.035) 1px,transparent 1px);background-size:40px 40px}
+.left{position:absolute;left:72px;top:96px;width:560px}
+.brand{display:flex;align-items:center;gap:20px}
+.brand img{width:96px;height:96px}
+h1{font-size:76px;font-weight:800;letter-spacing:-2px;line-height:1}
+h1 span{background:linear-gradient(180deg,#ffc46b,#ff8a1f 55%,#e2482b);-webkit-background-clip:text;color:transparent}
+.tag{margin-top:40px;font-size:38px;font-weight:700;line-height:1.18;letter-spacing:-.5px}
+.tag em{font-style:normal;color:#ff9a3c}
+.sub{margin-top:20px;font-size:22px;color:#a8b0be;line-height:1.4}
+.chips{margin-top:40px;display:flex;flex-direction:column;gap:12px}
+.chip{display:inline-flex;align-items:center;gap:12px;font:600 21px/1 ui-monospace,"SF Mono",Menlo,monospace;color:#d8dde6}
+.dot{width:12px;height:12px;border-radius:50%;background:#3ccf7a;box-shadow:0 0 12px #3ccf7a}
+.dot.r{background:#ff5a4a;box-shadow:0 0 12px #ff5a4a}
+.shot{position:absolute;left:680px;top:110px;width:760px;border-radius:14px;border:1px solid #2b3240;box-shadow:0 30px 80px rgba(0,0,0,.6),0 0 0 6px rgba(255,138,31,.08);transform:perspective(1400px) rotateY(-14deg) rotateX(4deg);transform-origin:left center}
+.shot2{top:420px;left:740px;width:620px;opacity:.97}
+.url{position:absolute;left:72px;bottom:44px;font:600 22px/1 ui-monospace,Menlo,monospace;color:#7d8696}
+.url b{color:#ff9a3c;font-weight:700}
+</style></head><body>
+<div class="glow"></div><div class="grid"></div>
+<img class="shot" src="../screenshots/08-verification.png">
+<img class="shot shot2" src="../screenshots/09-fault-detected.png">
+<div class="left">
+ <div class="brand"><img src="../logo/cobol-phoenix-logo.svg"><h1>COBOL<br><span>Phoenix</span></h1></div>
+ <div class="tag">Resurrect COBOL as Python.<br><em>Prove</em> it behaves the same.</div>
+ <div class="sub">Rules cited to source · differential tests against real GnuCOBOL · mutation analysis</div>
+ <div class="chips">
+  <div class="chip"><i class="dot"></i>127/127 identical to GnuCOBOL</div>
+  <div class="chip"><i class="dot"></i>180/180 on an external repo</div>
+  <div class="chip"><i class="dot r"></i>1-cent fault → 8 FAILED</div>
+ </div>
+</div>
+<div class="url"><b>cobol.beauty</b> · Kiroween 2026 · Resurrection</div>
+</body></html>
