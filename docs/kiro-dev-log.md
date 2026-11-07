@@ -46,7 +46,7 @@ Source: `.kiro/specs/*/tasks.meta.json` and Kiro's local session records for thi
 
 | What | Evidence |
 |---|---|
-| Kiro IDE 1.2.56 opened on the repository; 7 chat sessions | Kiro session records |
+| Kiro IDE (version 1.4.121) opened on the repository; 7 chat sessions | Kiro session records |
 | Steering `product`, `architecture`, `security`, `testing` (always) included in sessions | `steering_inclusion` events |
 | `cobol-analysis` task 9 (INSPECT) executed 3 times across 3 sessions | `tasks.meta.json` |
 | `python-generation` task 7 (OpenAPI examples) executed 2 times across 2 sessions | `tasks.meta.json` |

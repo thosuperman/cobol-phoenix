@@ -4,7 +4,7 @@ Everything below is backed by files in this repository or by Kiro's own session 
 use are listed as such.
 
 ## Kiro surfaces
-- **Kiro IDE (1.2.56)** — used for spec-task execution with hooks and steering. Seven Kiro chat sessions on this
+- **Kiro IDE (version 1.4.121)** — used for spec-task execution with hooks and steering. Seven Kiro chat sessions on this
   repository (5–6 Nov 2026).
 - Kiro CLI, Kiro Web and Kiro Crew — not used.
 
