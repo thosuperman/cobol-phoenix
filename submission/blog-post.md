@@ -4,6 +4,10 @@
 
 **This post is written as part of the Kiroween 2026 hackathon.**
 
+- **Live demo:** [cobol.beauty](https://cobol.beauty) — no login, sample and an external repository pre-loaded
+- **Source code:** [github.com/thosuperman/cobol-phoenix](https://github.com/thosuperman/cobol-phoenix) (Apache-2.0)
+- **Demo video:** *(add YouTube link)*
+
 Every legacy-modernization pitch promises to “convert your COBOL”. Converting is not the problem. The problem is the
 question every architect asks afterwards: **how do we know the new code behaves exactly like the old one?**
 COBOL Phoenix is our answer: understand the program deterministically, generate code you can trace line by line,
@@ -13,7 +17,7 @@ and prove behaviour by running the original and the generated code side by side.
 We wrote a real COBOL front end in Python — a fixed/free-format lexer, a COPY … REPLACING preprocessor and a
 recursive-descent parser — producing an intermediate representation where every node carries a file and line
 range. Business rules, the dependency graph and the generated code are all derived from that IR. Anything outside
-the supported subset (file I/O, INSPECT, ALTER, EXEC SQL…) is reported with its location and becomes an explicit
+the supported subset (file I/O, UNSTRING, ALTER, EXEC SQL…) is reported with its location and becomes an explicit
 `UnsupportedConstruct` in the generated code. Nothing is silently dropped.
 
 ## Rule 2: COBOL data is bytes
@@ -51,15 +55,31 @@ We started from an empty repository by writing Kiro steering documents (product 
 security, testing), four specs with EARS requirements, designs and task lists, and hooks. The steering file on
 COBOL semantics turned out to be the most valuable artifact: it was the checklist we tested the runtime against.
 
-We then used Kiro IDE to execute spec tasks: support for `INSPECT … TALLYING / REPLACING`, and OpenAPI request
-examples generated from fixtures. Because a `PostTaskExec` hook runs the whole suite — including the differential
+We then used Kiro IDE to execute spec tasks: support for `INSPECT … TALLYING / REPLACING`, OpenAPI request
+examples generated from fixtures, and *validity-aware placement*, which re-places a boundary case when an earlier
+validation rule would reject it before it reaches its target statement. Because a `PostTaskExec` hook runs the whole suite — including the differential
 tests against GnuCOBOL — every Kiro task had to keep the generated Python behaviourally identical to the original.
 Kiro even refused to guess GnuCOBOL's sign handling for INSPECT on signed numbers and reported those as
 unsupported instead, exactly as our steering asked. *(Add your own impressions of working with Kiro here.)*
 
 ## Results
-- Original sample: 127/127 cases identical to GnuCOBOL; injected fault caught (8 failing cases).
-- Independent insurance repository: 180/180 on the underwriting program; generated drivers reproduce upstream golden files.
+- Original sample: 127/127 cases identical to GnuCOBOL 3.2.0, 95.8% statement coverage, mutation score 31/36;
+  injected fault caught (8 failing cases).
+- Independent insurance repository: 180/180 on the underwriting program, 96.3% coverage, mutation score 36/43;
+  generated drivers reproduce upstream golden files.
 - Two more repositories: 20 programs parsed with zero errors; 365 unsupported constructs reported, not ignored.
 
-COBOL Phoenix is open source under Apache-2.0. Preserve the logic. Rebuild the future.
+## Try it
+Open [cobol.beauty](https://cobol.beauty), click **Import sample → Generate → Verify**, then inject a fault and watch
+it get caught. Or run it yourself with Docker:
+
+```bash
+git clone https://github.com/thosuperman/cobol-phoenix && cd cobol-phoenix
+docker compose up --build
+```
+
+COBOL Phoenix is open source under Apache-2.0:
+[github.com/thosuperman/cobol-phoenix](https://github.com/thosuperman/cobol-phoenix).
+Preserve the logic. Rebuild the future.
+
+#KiroweenHackathon26 #Kiro #COBOL #Python
