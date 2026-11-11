@@ -18,7 +18,7 @@ const TOC = [
   { id: "third-party", title: "Third-party websites and services" },
   { id: "availability", title: "Availability and changes" },
   { id: "experimental", title: "Experimental software and beta features" },
-  { id: "warranty", title: "No warranties" },
+  { id: "warranty", title: "As is, at your own risk" },
   { id: "liability", title: "Limitation of liability" },
   { id: "termination", title: "Suspension and removal" },
   { id: "changes", title: "Changes to these terms" },
@@ -42,7 +42,7 @@ export default function TermsPage() {
         "It's a free, public demo with no accounts. Anything you import is visible to — and can be deleted by — every other visitor.",
         "Only upload code you are allowed to share, and never upload secrets, personal data or confidential code.",
         "Don't attack the service or try to escape the COBOL sandbox. Report security issues privately instead.",
-        "Generated code and verification results are evidence for the inputs tested, not a guarantee. Review everything before you rely on it.",
+        "Everything is free, provided as is and as available, and used at your own risk. Review all results before you rely on them.",
         "The demo can change, be reset or go offline at any time. Japanese law applies.",
       ]}
     >
@@ -134,6 +134,10 @@ export default function TermsPage() {
           <Link href="/privacy#providers">Privacy Policy</Link>). We don&apos;t control those services and aren&apos;t responsible for their content, availability or
           practices; your use of them is governed by their own terms.
         </p>
+        <p>
+          These terms cover only {SITE.domain}. Any website or application linked from it — including other projects by the same maintainer — is operated independently,
+          under its own terms and privacy policy, and is not part of the Service.
+        </p>
       </Section>
 
       <Section id="availability" n={8} title="Availability and changes">
@@ -151,32 +155,28 @@ export default function TermsPage() {
         </p>
       </Section>
 
-      <Section id="warranty" n={10} title="No warranties">
+      <Section id="warranty" n={10} title="As is, as available, at your own risk">
         <p>
-          To the extent permitted by applicable law, the Service and everything it produces — including analysis, business-rule documentation, generated code, verification
-          results and reports — are provided <strong>&quot;as is&quot; and &quot;as available&quot;</strong>, without warranties of any kind, express or implied, including
-          warranties of accuracy, completeness, reliability, availability, merchantability, fitness for a particular purpose, non-infringement, or that the Service will be
-          error-free or secure.
+          The Service and all of its content — including analysis, business-rule documentation, generated code, verification results and reports — are provided free of
+          charge, <strong>&quot;as is&quot; and &quot;as available&quot;</strong>, without warranties of any kind, express or implied, to the extent permitted by applicable law.
+          You access and use the Service voluntarily and <strong>at your own risk</strong>.
         </p>
         <p>
-          In particular, a &quot;verified&quot; result means the original and the generated program produced identical outputs <strong>for the inputs that were executed</strong>
-          . It is not proof that they behave identically for all inputs.
+          We do not guarantee that the Service or its content will be available, uninterrupted, accurate, complete, reliable, secure, error-free or fit for any particular
+          purpose. A &quot;verified&quot; result means only that the original and the generated program produced identical outputs for the inputs that were executed; it is
+          not proof that they behave identically for all inputs.
         </p>
+        <p>The Service does not promise or guarantee any business, investment or financial result.</p>
       </Section>
 
       <Section id="liability" n={11} title="Limitation of liability">
         <p>
-          To the extent permitted by applicable law, we will not be liable for any indirect, incidental, special, consequential or punitive damages, or for any loss of data,
-          profits, revenue, business or goodwill, arising from or related to your use of, or inability to use, the Service or anything it produces, even if we were advised
-          of the possibility of such damages.
+          To the extent permitted by applicable law, we are not responsible for any loss or damage arising from your use of, inability to use, or reliance on the Service,
+          including loss or damage arising from experimental features, generated code, AI-generated content, verification results, or third-party websites and services.
         </p>
         <p>
-          Because the Service is provided free of charge, to the extent permitted by law our total liability for any claim relating to the Service is limited to direct and
-          ordinary damages actually incurred, up to a maximum of JPY 10,000.
-        </p>
-        <p>
-          Nothing in these terms excludes or limits liability that cannot be excluded or limited under applicable law — including, where the Consumer Contract Act of Japan
-          applies, liability for damage caused by our intentional misconduct or gross negligence.
+          These terms do not set any contractual compensation amount or monetary cap. Nothing in them excludes or limits any liability that cannot be excluded or limited
+          under the laws of Japan, including the Consumer Contract Act, or under other applicable mandatory law.
         </p>
       </Section>
 

@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 
 const TOC = [
   { id: "project", title: "A personal, experimental project" },
-  { id: "no-guarantee", title: "No guarantee" },
+  { id: "no-guarantee", title: "As is, at your own risk" },
   { id: "verification", title: "What “verified” means" },
   { id: "generated-code", title: "Generated code and reports" },
   { id: "not-advice", title: "Not professional advice" },
@@ -33,7 +33,7 @@ export default function DisclaimerPage() {
       }
       summary={[
         "This is a personal hobby project built for a hackathon — an experiment, not a commercial product.",
-        "Results can be wrong. Treat every output as a starting point to review, not a finished answer.",
+        "Free, as is, as available and at your own risk. Results can be wrong — treat every output as a starting point to review.",
         "“Verified” covers only the inputs that were actually run, not every possible input.",
         "Any AI-written text is advisory, may contain errors and must be checked independently.",
       ]}
@@ -46,10 +46,15 @@ export default function DisclaimerPage() {
         </p>
       </Section>
 
-      <Section id="no-guarantee" n={2} title="No guarantee">
+      <Section id="no-guarantee" n={2} title="As is, as available, at your own risk">
         <p>
-          To the extent permitted by law, we make no guarantee about the accuracy, completeness, reliability, security, availability or fitness for a particular purpose of
-          the Service or anything it produces. The hosted demo may be slow, reset, changed or offline at any time. Use it at your own risk.
+          The site and all of its content are provided free of charge, <strong>&quot;as is&quot; and &quot;as available&quot;</strong>, without warranties of any kind, to the
+          extent permitted by applicable law. You use it voluntarily and <strong>at your own risk</strong>.
+        </p>
+        <p>
+          There is no guarantee of availability, accuracy, reliability, security or uninterrupted operation; the demo may be slow, reset, changed or offline at any time. To
+          the extent permitted by applicable law, we are not responsible for losses arising from reliance on experimental features, generated code, AI-generated content or
+          third-party services. Nothing here excludes liability that cannot be excluded under the laws of Japan.
         </p>
       </Section>
 
@@ -79,7 +84,8 @@ export default function DisclaimerPage() {
 
       <Section id="not-advice" n={5} title="Not professional advice">
         <p>
-          Nothing on the site is legal, financial, insurance, actuarial, accounting or other professional advice. The sample &quot;Phoenix Mutual&quot; project, its rates and
+          Nothing on the site is legal, financial, investment, insurance, actuarial, accounting or other professional advice, and nothing on it promises any investment
+          return or financial outcome. The sample &quot;Phoenix Mutual&quot; project, its rates and
           rules are fictional and exist only to demonstrate the software. Business rules extracted from code describe what the code does, not whether it is correct, fair or
           compliant.
         </p>
@@ -104,7 +110,11 @@ export default function DisclaimerPage() {
       <Section id="third-party" n={7} title="Third-party code and content">
         <p>
           Projects imported by visitors and the public repositories used for demonstration belong to their respective owners and are subject to their own licences. We
-          don&apos;t review, endorse or take responsibility for content imported by visitors. Links to other websites are provided for convenience only.
+          don&apos;t review, endorse or take responsibility for content imported by visitors.
+        </p>
+        <p>
+          Links to other websites and applications are provided for convenience only. Linked sites — including other projects by the same maintainer — are operated
+          independently under their own terms and are not part of {SITE.domain}.
         </p>
       </Section>
 
