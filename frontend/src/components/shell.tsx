@@ -7,6 +7,7 @@ import { Boxes, Cpu, FolderUp, LayoutDashboard, Menu, X } from "lucide-react";
 import { api } from "@/lib/api";
 import { useApi } from "@/lib/use-api";
 import { Wordmark } from "./logo";
+import { LegalLinks } from "./site-footer";
 import { cn } from "./ui";
 
 const NAV = [
@@ -68,6 +69,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           <div className="mt-1.5 text-fog-500">{health.error ? "backend unreachable" : "checking…"}</div>
         )}
         {health.data && <div className="mt-2 text-[10.5px] text-fog-500">AI explanations: {health.data.llm.provider}</div>}
+        <LegalLinks className="mt-3 text-[10.5px] text-fog-500" />
       </div>
     </nav>
   );

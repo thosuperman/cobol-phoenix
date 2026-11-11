@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ArrowRight, Binary, FileSearch, FlaskConical, GitCompareArrows, Network, ShieldCheck, Sparkles, Workflow } from "lucide-react";
 import { PhoenixMark, Wordmark } from "@/components/logo";
+import { LegalLinks } from "@/components/site-footer";
 
 const ACTS = [
   {
@@ -146,6 +147,7 @@ export default function Landing() {
           <span className="flex items-center gap-1.5">
             <Workflow className="h-3.5 w-3.5" /> COBOL → IR → Python → proof
           </span>
+          <LegalLinks />
         </div>
       </footer>
     </div>

@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useRef, useState, type DragEvent } from "react";
 import { FileArchive, FolderOpen, FolderGit2 as Github, ShieldCheck, Sparkles, UploadCloud, X } from "lucide-react";
@@ -57,6 +58,14 @@ export default function ImportPage() {
   return (
     <div className="animate-fade-up max-w-4xl">
       <PageTitle eyebrow="Act I · The dead system" title="Import a COBOL project" subtitle="Bring COBOL programs and copybooks into COBOL Phoenix. Imported code is stored as data and is never executed during import or analysis." />
+      <p className="-mt-2 mb-5 flex items-start gap-2 rounded-lg border border-amber-500/25 bg-amber-500/[0.06] px-3.5 py-2.5 text-xs leading-relaxed text-fog-300">
+        <ShieldCheck className="mt-0.5 h-3.5 w-3.5 shrink-0 text-amber-400" />
+        <span>
+          This is a shared public workspace: imported projects are visible to every visitor and anyone can delete them. Only import code you may share, and never include
+          personal data, secrets or confidential code. See the <Link href="/terms" className="text-phoenix-300 underline underline-offset-2">Terms</Link> and{" "}
+          <Link href="/privacy" className="text-phoenix-300 underline underline-offset-2">Privacy Policy</Link>.
+        </span>
+      </p>
       <Segmented<Tab>
         value={tab}
         onChange={setTab}
