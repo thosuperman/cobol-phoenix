@@ -28,4 +28,4 @@
 - Generated projects: both sample services pass their own generated tests and ruff.
 - Frontend: type-check and production build pass; Playwright demo workflow passes; no horizontal overflow at 375 px / 768 px.
 - Docker Compose stack: healthy, verification through the sandbox sidecar, runner has no network.
-- Hosted at https://cobol.beauty: RATEENG 127/127 (mutation 31/36), NBUW001 180/180 (36/43), injected fault caught (8 FAILED).
+- Hosted at https://cobol.beauty (re-verified on the new VPS, 25 Nov 2026): RATEENG 127/127 (mutation 31/36), NBUW001 180/180 (36/43), injected fault caught (12 FAILED).

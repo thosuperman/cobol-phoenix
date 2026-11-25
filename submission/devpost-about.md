@@ -81,7 +81,7 @@ behind Caddy.
 | Original sample `RATEENG` (auto insurance rating) | 127 / 127 | 95.8 % | 31 / 36 |
 | `NBUW001` from an independent public insurance repository | 180 / 180 | 96.3 % | 36 / 43 |
 
-Removing one `ROUNDED` makes 8 cases fail — down to the cent. The generated Python of that repository's three test
+Removing one `ROUNDED` makes 12 cases fail — down to the cent. The generated Python of that repository's three test
 drivers reproduces its golden files byte for byte, and two more public repositories (banking, ledger) parse with zero
 errors while 365 unsupported constructs are reported rather than ignored.
 

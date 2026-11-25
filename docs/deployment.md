@@ -39,7 +39,34 @@ alembic revision --autogenerate -m "describe"      # after model changes
 Expose only the frontend (`PHOENIX_WEB_PORT`) behind a TLS-terminating proxy (Caddy, nginx, ALB). The backend
 port mapping can be removed in production; the frontend reaches it on the internal network.
 
-## AWS Lightsail (used for the hosted demo)
+## VPS that already runs nginx (current hosted demo)
+
+The hosted demo now runs on an Ubuntu 24.04 VPS that already serves other sites with nginx, so nginx — not Caddy —
+terminates HTTP(S) and the stack only listens on localhost.
+
+1. Copy the repository to `/opt/cobol-phoenix` and create `.env` from `deploy/lightsail.env.example`
+   (drop `PHOENIX_REDIRECT_DOMAINS`; keep `PHOENIX_WEB_PORT=127.0.0.1:3000` and `PHOENIX_API_PORT=127.0.0.1:8000`).
+2. Start the stack:
+   ```bash
+   docker compose -f docker-compose.yml -f deploy/docker-compose.vps.yml up -d --build
+   ```
+   The override labels the containers so Watchtower (or a similar auto-updater) leaves the locally built images alone.
+3. Install the site and reload nginx:
+   ```bash
+   cp deploy/nginx/cobol-phoenix.conf /etc/nginx/sites-available/
+   ln -s /etc/nginx/sites-available/cobol-phoenix.conf /etc/nginx/sites-enabled/
+   nginx -t && systemctl reload nginx
+   ```
+   Access logging is off for this site because the privacy policy says the web server keeps no access logs.
+4. After DNS for `cobol.beauty` and `www.cobol.beauty` points at the server, add HTTPS:
+   ```bash
+   certbot --nginx -d cobol.beauty -d www.cobol.beauty --redirect
+   ```
+
+If you move the demo to another host or provider, update `frontend/src/lib/site.ts` and the hosting and
+international-transfer sections of `/privacy`.
+
+## AWS Lightsail (previous hosted demo)
 
 ```
 Route 53  cobol-phoenix.<domain>  A ─► Lightsail static IP

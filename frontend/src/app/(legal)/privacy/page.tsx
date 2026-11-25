@@ -44,7 +44,7 @@ export default function PrivacyPage() {
         "Whatever you import is stored on our server and is visible to every visitor — so don't upload personal data or anything confidential.",
         "Your IP address reaches our server because that's how the internet works; we don't use it to profile you, and we don't sell or share data.",
         "The demo runs without any AI provider. If that ever changes, this page will say so first.",
-        "Servers are on AWS in Singapore. Anyone can delete a project with the trash icon; ask us about anything else.",
+        "Our server is a virtual private server in Vietnam. Anyone can delete a project with the trash icon; ask us about anything else.",
       ]}
     >
       <Section id="scope" n={1} title="Scope and who we are">
@@ -110,8 +110,8 @@ export default function PrivacyPage() {
 
       <Section id="logs" n={6} title="Server logs and IP addresses">
         <p>
-          Every web request reaches our server with your IP address — that&apos;s required to send the page back. Our HTTPS server (Caddy) is configured without access
-          logging. The application components write operational logs (for example request method, path, response status, time and error details) to the server&apos;s
+          Every web request reaches our server with your IP address — that&apos;s required to send the page back. Our web server (nginx) is configured not to keep access
+          logs for this site. The application components write operational logs (for example request method, path, response status, time and error details) to the server&apos;s
           container logs. Because requests pass through an internal proxy, these logs normally record internal addresses rather than yours, but they may incidentally
           contain an IP address or other request details.
         </p>
@@ -125,7 +125,8 @@ export default function PrivacyPage() {
         <FactTable
           head={["Provider", "Role", "Data involved"]}
           rows={[
-            ["Amazon Web Services (Lightsail, Route 53)", "Server hosting in Singapore; DNS for our domain", "All data described in this policy is stored and processed on this infrastructure"],
+            ["Cloudfly Corporation", "Virtual private server hosting in Vietnam", "All data described in this policy is stored and processed on this server"],
+            ["Our domain's DNS provider", "Resolves cobol.beauty to our server", "Only DNS lookups of our domain, made by your device or network"],
             ["GitHub", "Source of repository imports; hosts our source code and contact channel", "When you import a repository, our server downloads it from GitHub — GitHub sees our server, not you. If you contact us there, GitHub's privacy statement applies."],
             ["Let's Encrypt", "Issues our HTTPS certificate", "Only our domain name; no visitor data"],
           ]}
@@ -181,14 +182,13 @@ export default function PrivacyPage() {
 
       <Section id="transfers" n={11} title="International data transfers">
         <p>
-          The Service is operated from Japan, and its servers are located in <strong>Singapore</strong> ({SITE.hosting}). Data you send to the Service is therefore stored and
-          processed in Singapore, and may be accessed from Japan for maintenance.
+          The Service is operated from Japan, and its server is located in <strong>Vietnam</strong> ({SITE.hosting}). Data you send to the Service is therefore stored and
+          processed in Vietnam, and may be accessed from Japan for maintenance.
         </p>
         <p>
-          For transparency under the APPI: Singapore has a comprehensive personal data protection law, the Personal Data Protection Act 2012, supervised by the Personal Data
-          Protection Commission. AWS provides the infrastructure under its customer agreement and data processing terms, which commit it to security measures and to not
-          accessing customer content except as needed to provide its services or comply with law. If you are outside Japan, your data is transferred to Singapore and Japan
-          when you use the Service.
+          For transparency under the APPI: Vietnam has a personal data protection law (the Law on Personal Data Protection, in force since 1 January 2026), administered by
+          the Ministry of Public Security. Our hosting provider supplies the server under its service terms; we administer the server and the data on it ourselves, and we
+          apply the security measures described above. If you are outside Japan, your data is transferred to Vietnam and Japan when you use the Service.
         </p>
       </Section>
 

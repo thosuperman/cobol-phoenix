@@ -1,0 +1,15 @@
+# Override for a VPS that already runs nginx on ports 80/443 (instead of Caddy).
+#   docker compose -f docker-compose.yml -f deploy/docker-compose.vps.yml up -d --build
+# Set PHOENIX_WEB_PORT=127.0.0.1:3000 and PHOENIX_API_PORT=127.0.0.1:8000 in .env so only nginx is public,
+# and install deploy/nginx/cobol-phoenix.conf as the nginx site.
+# The images are built locally, so container auto-updaters (e.g. Watchtower) must leave them alone.
+services:
+  frontend:
+    labels:
+      com.centurylinklabs.watchtower.enable: "false"
+  backend:
+    labels:
+      com.centurylinklabs.watchtower.enable: "false"
+  runner:
+    labels:
+      com.centurylinklabs.watchtower.enable: "false"

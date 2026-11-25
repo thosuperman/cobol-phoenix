@@ -46,7 +46,7 @@ finished. We would never have found that by reading documentation. Differential 
 ## Trust, measured
 Passing cases are evidence, not proof, so we measure the tests themselves: mutation analysis generates single-fault
 variants (drop a ROUNDED, flip a `<` to `<=`) and checks the suite catches them. In the UI you can inject one on
-purpose — remove one ROUNDED and watch eight cases fail by exactly one cent. On the insurance repository the
+purpose — remove one ROUNDED and watch twelve cases fail by exactly one cent. On the insurance repository the
 surviving mutants pointed at a business rule that can never fire, because every plan caps the issue age below the
 rule's threshold. That is the kind of finding a modernization team actually needs.
 
@@ -64,7 +64,7 @@ unsupported instead, exactly as our steering asked. *(Add your own impressions o
 
 ## Results
 - Original sample: 127/127 cases identical to GnuCOBOL 3.2.0, 95.8% statement coverage, mutation score 31/36;
-  injected fault caught (8 failing cases).
+  injected fault caught (12 failing cases).
 - Independent insurance repository: 180/180 on the underwriting program, 96.3% coverage, mutation score 36/43;
   generated drivers reproduce upstream golden files.
 - Two more repositories: 20 programs parsed with zero errors; 365 unsupported constructs reported, not ignored.
