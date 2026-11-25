@@ -45,3 +45,6 @@ corpus/repos/
 # Demo video build intermediates
 submission/video/raw-recording.webm
 submission/video/audio/
+
+# Local SSH keys — never commit
+/ssh/
